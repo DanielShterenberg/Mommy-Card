@@ -1,1 +1,291 @@
-temp
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+   <title>Congrats Mommy!</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+   <link href="https://fonts.googleapis.com/css2?family=Indie+Flower&family=Patrick+Hand&display=swap" rel="stylesheet">
+   <style>
+       body {
+           margin: 0; padding: 0; overflow: hidden; background-color: #333;
+           touch-action: none; -webkit-user-select: none; user-select: none;
+       }
+       #card-container {
+           position: relative; width: 100vw; height: 100vh; background-color: #fdf6e3;
+           background-image: radial-gradient(#d4c5a3 1px, transparent 1px), linear-gradient(to bottom, #fdf6e3 0%, #f4e9c8 100%);
+           background-size: 20px 20px, 100% 100%; overflow: hidden; font-family: 'Indie Flower', cursive;
+       }
+       .paper-overlay {
+           position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.4;
+           background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.5'/%3E%3C/svg%3E");
+           z-index: 5;
+       }
+       @keyframes wiggle { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+       @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+       @keyframes popIn { 0% { transform: scale(0); } 70% { transform: scale(1.1); } 100% { transform: scale(1); } }
+       .animate-wiggle { animation: wiggle 2s ease-in-out infinite; }
+       .animate-float { animation: float 3s ease-in-out infinite; }
+       .letter { display: inline-block; transition: transform 0.2s; cursor: pointer; }
+       .letter:hover { transform: scale(1.3) rotate(10deg) !important; color: #ff5e5e; }
+       #drawing-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 20; touch-action: none; }
+       .character { transition: transform 0.2s; cursor: pointer; filter: drop-shadow(2px 4px 0px rgba(0,0,0,0.1)); }
+       .character:active { transform: scale(0.9) translateY(5px); }
+       .ui-wrapper {
+           position: absolute; bottom: 1.5rem; left: 0; width: 100%; display: flex; flex-direction: column; align-items: center; z-index: 50; pointer-events: none;
+       }
+       .control-panel {
+           pointer-events: auto; background: rgba(255, 255, 255, 0.95); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+           border-radius: 20px; padding: 0.5rem 1rem; border: 2px solid #e5e7eb; display: flex; align-items: center; gap: 0.5rem;
+       }
+       @media (max-width: 768px) {
+           .control-panel { flex-wrap: wrap; justify-content: center; width: 95%; gap: 0.5rem; padding: 0.8rem; }
+           .ui-wrapper { bottom: 1rem; }
+       }
+       .tool-btn {
+           width: 44px; height: 44px; border-radius: 50%; border: 2px solid transparent; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; background: #f3f4f6; cursor: pointer; transition: transform 0.1s;
+       }
+       .tool-btn.active { background: #dbeafe; border-color: #3b82f6; transform: scale(1.1); }
+       .color-btn {
+           width: 36px; height: 36px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 2px #e5e7eb; transition: transform 0.1s; cursor: pointer;
+       }
+       .color-btn.active { transform: scale(1.2); box-shadow: 0 0 0 2px #3b82f6; }
+       #sticker-palette {
+           pointer-events: auto; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: white; padding: 10px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: none; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 12px; border: 2px solid #e5e7eb;
+       }
+       #sticker-palette.show { display: grid; animation: popIn 0.2s ease-out; }
+       .sticker-option { font-size: 2rem; cursor: pointer; padding: 5px; border-radius: 8px; }
+       .sticker-option.selected { background-color: #dbeafe; border: 1px solid #3b82f6; }
+       .modal-overlay {
+           position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; display: none; align-items: center; justify-content: center; backdrop-filter: blur(3px); padding: 20px;
+       }
+       .modal-box {
+           background: white; padding: 1.5rem; border-radius: 1rem; width: 100%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); font-family: 'Patrick Hand', cursive; animation: popIn 0.2s ease-out;
+       }
+       .saved-item { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem; border-bottom: 1px solid #eee; cursor: pointer; }
+       .saved-item:active { background: #f0f9ff; }
+       #flash { position: fixed; inset: 0; background: white; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.5s; }
+   </style>
+</head>
+<body>
+   <div id="flash"></div>
+
+
+   <!-- 1. GALLERY MODAL -->
+   <div id="gallery-modal" class="modal-overlay">
+       <div class="modal-box">
+           <h2 class="text-3xl font-bold mb-4 text-indigo-600">Saved Drawings</h2>
+           <div id="gallery-list" class="max-h-60 overflow-y-auto mb-4 border rounded p-2 bg-gray-50"></div>
+           <div class="flex justify-end"><button onclick="closeModals()" class="px-6 py-2 bg-gray-200 rounded-full font-bold text-lg">Close</button></div>
+       </div>
+   </div>
+
+
+   <!-- 2. SAVE NAME MODAL -->
+   <div id="save-modal" class="modal-overlay">
+       <div class="modal-box">
+           <h2 class="text-2xl font-bold mb-2">Name your drawing:</h2>
+           <input type="text" id="drawing-name-input" class="w-full border-2 border-blue-300 rounded-lg p-3 text-xl mb-4 focus:outline-none focus:border-blue-500" placeholder="e.g. Emma's Art">
+           <div class="flex justify-end gap-3"><button onclick="closeModals()" class="px-4 py-2 text-gray-500 text-lg">Cancel</button><button onclick="finalizeSave()" class="px-6 py-2 bg-blue-500 text-white rounded-full font-bold text-lg shadow-lg">Save</button></div>
+       </div>
+   </div>
+
+
+   <!-- 3. IMAGE DOWNLOAD MODAL (Android Optimized) -->
+   <div id="image-modal" class="modal-overlay">
+       <div class="modal-box flex flex-col items-center">
+           <h2 class="text-2xl font-bold mb-2 text-center">Ready to Save!</h2>
+           <p class="text-center text-gray-500 mb-4 text-sm">Tap "Download" or long-press the image to save.</p>
+           <div id="img-result-container" class="border-4 border-white shadow-lg mb-4 max-h-[50vh] overflow-hidden"></div>
+           <!-- Hidden link for Android auto-download -->
+           <a id="download-link" style="display:none"></a>
+           <div class="flex gap-2 w-full">
+               <button onclick="triggerDownload()" class="flex-1 px-4 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold text-lg shadow">Download ⬇️</button>
+               <button onclick="closeModals()" class="px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-bold text-lg">Close</button>
+           </div>
+       </div>
+   </div>
+
+
+   <div id="card-container">
+       <div class="paper-overlay"></div>
+       <svg style="position: absolute; width: 0; height: 0;"><defs><filter id="rough-paper"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="5" result="noise" /><feDisplacementMap in="SourceGraphic" in2="noise" scale="2" /></filter></defs></svg>
+       <div class="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none">
+           <div class="text-center mb-8 pointer-events-auto">
+               <h1 class="text-6xl md:text-8xl font-bold tracking-wider mb-2" id="main-title"></h1>
+               <p class="text-2xl md:text-4xl text-gray-600 font-['Patrick_Hand'] animate-float mt-4 bg-white/50 px-4 py-2 rounded-lg inline-block transform -rotate-2">We are so proud of your new job!</p>
+           </div>
+           <div class="relative w-full max-w-4xl h-96 flex items-end justify-center space-x-4 md:space-x-12 pointer-events-auto pb-12">
+               <div class="character group relative w-32 h-48" onclick="characterJump(this)"><div class="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity text-xl font-bold text-pink-500 w-full text-center">YAY!</div><svg viewBox="0 0 100 150" class="w-full h-full overflow-visible"><circle cx="50" cy="30" r="20" fill="none" stroke="#000" stroke-width="3" filter="url(#rough-paper)"/><path d="M25 30 Q 15 20, 25 10 Q 35 0, 50 5 Q 65 0, 75 10 Q 85 20, 75 30" fill="none" stroke="#8B4513" stroke-width="3" filter="url(#rough-paper)"/><circle cx="43" cy="28" r="2" fill="#000"/><circle cx="57" cy="28" r="2" fill="#000"/><path d="M40 38 Q 50 45, 60 38" fill="none" stroke="#000" stroke-width="2"/><path d="M50 50 L 25 120 L 75 120 Z" fill="#FFB6C1" stroke="#000" stroke-width="3" filter="url(#rough-paper)"/><path d="M40 60 L 10 40" fill="none" stroke="#000" stroke-width="3" class="origin-bottom-right animate-wiggle"/><path d="M60 60 L 90 40" fill="none" stroke="#000" stroke-width="3" class="origin-bottom-left animate-wiggle" style="animation-delay: 0.5s"/><path d="M40 120 L 35 145" fill="none" stroke="#000" stroke-width="3"/><path d="M60 120 L 65 145" fill="none" stroke="#000" stroke-width="3"/></svg></div>
+               <div class="character group relative w-40 h-64" onclick="characterJump(this)"><div class="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity text-2xl font-bold text-purple-600 w-full text-center">HIRED!</div><svg viewBox="0 0 100 200" class="w-full h-full overflow-visible"><circle cx="50" cy="35" r="25" fill="none" stroke="#000" stroke-width="3" filter="url(#rough-paper)"/><path d="M20 35 C 10 10, 40 0, 50 5 C 60 0, 90 10, 80 35 L 85 80 L 15 80 Z" fill="#333" fill-opacity="0.1" stroke="#333" stroke-width="3" filter="url(#rough-paper)"/><g stroke="#000" stroke-width="2" fill="none"><circle cx="40" cy="35" r="8"/><circle cx="60" cy="35" r="8"/><line x1="48" y1="35" x2="52" y2="35"/><line x1="32" y1="35" x2="25" y2="32"/><line x1="68" y1="35" x2="75" y2="32"/></g><path d="M38 48 Q 50 55, 62 48" fill="none" stroke="#000" stroke-width="2"/><path d="M50 60 L 25 150 L 75 150 Z" fill="#E6E6FA" stroke="#000" stroke-width="3" filter="url(#rough-paper)"/><line x1="45" y1="75" x2="55" y2="75" stroke="#000" stroke-width="2"/><line x1="40" y1="90" x2="60" y2="90" stroke="#000" stroke-width="2"/><path d="M40 70 L 10 90" fill="none" stroke="#000" stroke-width="3"/><path d="M60 70 L 90 90" fill="none" stroke="#000" stroke-width="3"/><path d="M40 150 L 40 190" fill="none" stroke="#000" stroke-width="3"/><path d="M60 150 L 60 190" fill="none" stroke="#000" stroke-width="3"/></svg></div>
+               <div class="character group relative w-32 h-48" onclick="characterJump(this)"><div class="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity text-xl font-bold text-blue-500 w-full text-center">WOOHOO!</div><svg viewBox="0 0 100 150" class="w-full h-full overflow-visible"><circle cx="50" cy="30" r="20" fill="none" stroke="#000" stroke-width="3" filter="url(#rough-paper)"/><path d="M30 10 L 15 60 M 70 10 L 85 60 M 30 10 Q 50 -5, 70 10" fill="none" stroke="#5D4037" stroke-width="3" filter="url(#rough-paper)"/><circle cx="43" cy="28" r="2" fill="#000"/><circle cx="57" cy="28" r="2" fill="#000"/><path d="M40 38 Q 50 45, 60 38" fill="none" stroke="#000" stroke-width="2"/><path d="M50 50 L 25 120 L 75 120 Z" fill="#87CEEB" stroke="#000" stroke-width="3" filter="url(#rough-paper)"/><path d="M40 60 L 15 20" fill="none" stroke="#000" stroke-width="3" class="origin-bottom-right animate-wiggle"/><path d="M60 60 L 85 20" fill="none" stroke="#000" stroke-width="3" class="origin-bottom-left animate-wiggle" style="animation-delay: 0.3s"/><path d="M40 120 L 35 145" fill="none" stroke="#000" stroke-width="3"/><path d="M60 120 L 65 145" fill="none" stroke="#000" stroke-width="3"/></svg></div>
+           </div>
+           <div id="hint-text" class="text-xl text-gray-400 font-['Patrick_Hand'] mt-8 pointer-events-auto">(Draw anywhere!)</div>
+       </div>
+       <canvas id="drawing-canvas"></canvas>
+   </div>
+
+
+   <div class="ui-wrapper">
+       <div id="sticker-palette">
+           <div class="sticker-option" onclick="selectSticker('❤️')">❤️</div><div class="sticker-option" onclick="selectSticker('💖')">💖</div><div class="sticker-option" onclick="selectSticker('🦋')">🦋</div><div class="sticker-option" onclick="selectSticker('🌸')">🌸</div><div class="sticker-option" onclick="selectSticker('🌷')">🌷</div><div class="sticker-option" onclick="selectSticker('⭐')">⭐</div><div class="sticker-option" onclick="selectSticker('🌈')">🌈</div><div class="sticker-option" onclick="selectSticker('🦄')">🦄</div><div class="sticker-option" onclick="selectSticker('👑')">👑</div><div class="sticker-option" onclick="selectSticker('🎈')">🎈</div>
+       </div>
+       <div class="control-panel">
+           <div class="flex space-x-2 border-r pr-4 border-gray-300">
+               <button class="color-btn bg-red-600 active" onclick="activatePen('#dc2626', this)"></button><button class="color-btn bg-blue-600" onclick="activatePen('#2563eb', this)"></button><button class="color-btn bg-green-600" onclick="activatePen('#16a34a', this)"></button><button class="color-btn bg-yellow-600" onclick="activatePen('#ca8a04', this)"></button><button class="color-btn bg-purple-600" onclick="activatePen('#9333ea', this)"></button><button class="color-btn bg-black" onclick="activatePen('#000000', this)"></button>
+           </div>
+           <div class="flex space-x-2 border-r pr-4 border-gray-300 pl-2">
+               <button id="eraser-btn" class="tool-btn" onclick="activateEraser()">🧽</button><button id="sticker-btn" class="tool-btn" onclick="toggleStickers()">🦋</button>
+           </div>
+           <div class="flex space-x-2">
+               <button onclick="openGallery()" class="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-full font-['Patrick_Hand'] text-lg shadow-md transition-all whitespace-nowrap">📂</button>
+               <button onclick="promptForSave()" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-full font-['Patrick_Hand'] text-lg shadow-md transition-all whitespace-nowrap">💾</button>
+               <button onclick="saveAsImageMobile()" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-full font-['Patrick_Hand'] text-lg shadow-md transition-all whitespace-nowrap">📷</button>
+           </div>
+       </div>
+   </div>
+
+
+   <script>
+       const titleText = "CONGRATS MOMMY!";
+       const titleContainer = document.getElementById('main-title');
+       const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEEAD', '#FFCC5C', '#FF6B6B', '#D4A5A5'];
+       titleText.split('').forEach((char, index) => {
+           const span = document.createElement('span'); span.textContent = char === ' ' ? '\u00A0' : char; span.className = 'letter'; span.style.color = colors[index % colors.length]; span.style.display = 'inline-block'; span.style.animation = `wiggle 3s ease-in-out infinite`; span.style.animationDelay = `${index * 0.1}s`; titleContainer.appendChild(span);
+       });
+
+
+       const canvas = document.getElementById('drawing-canvas');
+       const cardContainer = document.getElementById('card-container');
+       const ctx = canvas.getContext('2d');
+       let allStrokes = [], currentStroke = null, mode = 'pen', isDrawing = false, lastX = 0, lastY = 0, currentPenColor = '#dc2626', currentSticker = '❤️';
+       let generatedImgData = null; // Store for download
+
+
+       function resizeCanvas() { if (!cardContainer) return; canvas.width = cardContainer.clientWidth; canvas.height = cardContainer.clientHeight; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; redrawAll(); }
+       window.addEventListener('resize', resizeCanvas);
+
+
+       function redrawAll() {
+           ctx.clearRect(0, 0, canvas.width, canvas.height);
+           allStrokes.forEach(stroke => {
+               if (stroke.type === 'sticker') {
+                   ctx.globalCompositeOperation = 'source-over'; ctx.font = "50px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(stroke.sticker, stroke.x * canvas.width, stroke.y * canvas.height);
+               } else {
+                   ctx.globalCompositeOperation = stroke.type === 'eraser' ? 'destination-out' : 'source-over'; ctx.strokeStyle = stroke.color; ctx.lineWidth = stroke.type === 'eraser' ? 30 : 5;
+                   if (stroke.points.length > 0) {
+                       ctx.beginPath(); ctx.moveTo(stroke.points[0].x * canvas.width, stroke.points[0].y * canvas.height);
+                       for (let i = 1; i < stroke.points.length; i++) ctx.lineTo(stroke.points[i].x * canvas.width, stroke.points[i].y * canvas.height);
+                       ctx.stroke();
+                   }
+               }
+           });
+           ctx.globalCompositeOperation = mode === 'eraser' ? 'destination-out' : 'source-over'; ctx.lineWidth = mode === 'eraser' ? 30 : 5; ctx.strokeStyle = currentPenColor;
+       }
+
+
+       function getPos(e) {
+           const rect = canvas.getBoundingClientRect(); const clientX = e.clientX || e.touches[0].clientX; const clientY = e.clientY || e.touches[0].clientY;
+           return { x: clientX - rect.left, y: clientY - rect.top, relX: (clientX - rect.left) / canvas.width, relY: (clientY - rect.top) / canvas.height };
+       }
+
+
+       function startInteraction(e) {
+           const hint = document.getElementById('hint-text'); if(hint) hint.remove();
+           if (e.target.closest('.ui-wrapper') || e.target.closest('.modal-overlay')) return;
+           const pos = getPos(e);
+           if (mode === 'stamp') {
+               allStrokes.push({ type: 'sticker', sticker: currentSticker, x: pos.relX, y: pos.relY });
+               ctx.globalCompositeOperation = 'source-over'; ctx.font = "50px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(currentSticker, pos.x, pos.y);
+               return;
+           }
+           isDrawing = true; lastX = pos.x; lastY = pos.y;
+           currentStroke = { type: mode, color: currentPenColor, points: [{x: pos.relX, y: pos.relY}] };
+       }
+
+
+       function moveInteraction(e) {
+           if (!isDrawing || mode === 'stamp') return;
+           const pos = getPos(e);
+           if (mode === 'eraser') { ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = 30; ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(pos.x, pos.y); ctx.stroke(); }
+           else { ctx.globalCompositeOperation = 'source-over'; ctx.strokeStyle = currentPenColor; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(pos.x, pos.y); ctx.stroke(); }
+           if (currentStroke) currentStroke.points.push({x: pos.relX, y: pos.relY});
+           lastX = pos.x; lastY = pos.y;
+       }
+
+
+       function endInteraction() { if (isDrawing && currentStroke) { allStrokes.push(currentStroke); currentStroke = null; } isDrawing = false; }
+      
+       canvas.addEventListener('mousedown', startInteraction); canvas.addEventListener('mousemove', moveInteraction); canvas.addEventListener('mouseup', endInteraction);
+       canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startInteraction(e); }, {passive: false}); canvas.addEventListener('touchmove', (e) => { e.preventDefault(); moveInteraction(e); }, {passive: false}); canvas.addEventListener('touchend', endInteraction);
+
+
+       function closeModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); }
+       function promptForSave() { document.getElementById('save-modal').style.display = 'flex'; document.getElementById('drawing-name-input').focus(); }
+       function finalizeSave() {
+           const name = document.getElementById('drawing-name-input').value.trim(); if (!name) return;
+           const savedDrawings = JSON.parse(localStorage.getItem('mommy_card_drawings') || '{}');
+           savedDrawings[name] = allStrokes; localStorage.setItem('mommy_card_drawings', JSON.stringify(savedDrawings));
+           closeModals(); showFlash();
+       }
+       function openGallery() {
+           const savedDrawings = JSON.parse(localStorage.getItem('mommy_card_drawings') || '{}'); const keys = Object.keys(savedDrawings); const list = document.getElementById('gallery-list'); list.innerHTML = '';
+           if (keys.length === 0) list.innerHTML = '<p class="text-center p-4 text-gray-500">No drawings found.</p>';
+           else keys.forEach(key => {
+               const div = document.createElement('div'); div.className = 'saved-item';
+               div.innerHTML = `<span class="text-xl font-hand">${key}</span><div><button class="text-blue-500 font-bold px-3" onclick="loadDrawing('${key}')">Load</button><button class="text-red-500 px-3" onclick="deleteDrawing('${key}')">✕</button></div>`;
+               list.appendChild(div);
+           });
+           document.getElementById('gallery-modal').style.display = 'flex';
+       }
+       function loadDrawing(key) {
+           const savedDrawings = JSON.parse(localStorage.getItem('mommy_card_drawings') || '{}');
+           if (savedDrawings[key]) { allStrokes = savedDrawings[key]; redrawAll(); closeModals(); }
+       }
+       function deleteDrawing(key) {
+           if(!confirm("Delete this?")) return;
+           const savedDrawings = JSON.parse(localStorage.getItem('mommy_card_drawings') || '{}');
+           delete savedDrawings[key]; localStorage.setItem('mommy_card_drawings', JSON.stringify(savedDrawings)); openGallery();
+       }
+
+
+       function saveAsImageMobile() {
+           const el = document.getElementById("card-container");
+           const ui = document.querySelector('.ui-wrapper');
+           ui.style.display = 'none';
+           html2canvas(el, { scale: 2, backgroundColor: '#fdf6e3', useCORS: true }).then(canvas => {
+               ui.style.display = 'flex';
+               generatedImgData = canvas.toDataURL("image/jpeg", 0.9);
+               const img = new Image(); img.src = generatedImgData; img.style.width = "100%"; img.style.borderRadius = "8px"; img.style.userSelect = "none"; img.style.webkitUserSelect = "none";
+               const container = document.getElementById('img-result-container'); container.innerHTML = ''; container.appendChild(img);
+               document.getElementById('image-modal').style.display = 'flex';
+           }).catch(e => { ui.style.display = 'flex'; alert("Error. Please try again."); });
+       }
+
+
+       // Android Trigger for Auto-Download
+       function triggerDownload() {
+           if (!generatedImgData) return;
+           const link = document.getElementById('download-link');
+           link.href = generatedImgData;
+           link.download = 'congrats-mommy-card.jpg';
+           link.click();
+       }
+
+
+       function showFlash() { const f = document.getElementById('flash'); f.style.opacity = '1'; setTimeout(() => f.style.opacity = '0', 200); }
+       function resetUI() { document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active')); document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active')); document.getElementById('sticker-palette').classList.remove('show'); }
+       function activatePen(color, btn) { mode = 'pen'; currentPenColor = color; resetUI(); btn.classList.add('active'); }
+       function activateEraser() { mode = 'eraser'; resetUI(); document.getElementById('eraser-btn').classList.add('active'); }
+       function toggleStickers() { const p = document.getElementById('sticker-palette'); const b = document.getElementById('sticker-btn'); if(p.classList.contains('show')) { p.classList.remove('show'); } else { resetUI(); b.classList.add('active'); p.classList.add('show'); mode = 'stamp'; } }
+       function selectSticker(s) { currentSticker = s; mode = 'stamp'; document.querySelectorAll('.sticker-option').forEach(o => o.classList.toggle('selected', o.innerText === s)); }
+       function characterJump(element) { element.style.transform = "translateY(-50px) scale(1.1)"; setTimeout(() => { element.style.transform = "translateY(0) scale(1)"; }, 300); const rect = element.getBoundingClientRect(); confetti({ particleCount: 30, spread: 50, origin: { x: (rect.left + rect.width / 2) / window.innerWidth, y: (rect.top + rect.height / 2) / window.innerHeight }, colors: ['#FFB6C1', '#87CEEB', '#E6E6FA'] }); }
+
+
+       window.onload = function() { resizeCanvas(); setTimeout(() => { const centerX = canvas.width * 0.8; const centerY = canvas.height * 0.2; ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(centerX, centerY); ctx.bezierCurveTo(centerX, centerY - 30, centerX - 50, centerY - 30, centerX - 50, centerY); ctx.bezierCurveTo(centerX - 50, centerY + 30, centerX, centerY + 60, centerX, centerY + 80); ctx.bezierCurveTo(centerX, centerY + 60, centerX + 50, centerY + 30, centerX + 50, centerY); ctx.bezierCurveTo(centerX + 50, centerY - 30, centerX, centerY - 30, centerX, centerY); ctx.stroke(); }, 500); };
+   </script>
+</body>
+</html>
+
