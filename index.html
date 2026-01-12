@@ -58,6 +58,13 @@
         #sticker-palette.show { display: grid; animation: popIn 0.2s ease-out; }
         .sticker-option { font-size: 2rem; cursor: pointer; padding: 5px; border-radius: 8px; }
         .sticker-option.selected { background-color: #dbeafe; border: 1px solid #3b82f6; }
+        #character-palette {
+            pointer-events: auto; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: white; padding: 10px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: none; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; border: 2px solid #e5e7eb;
+        }
+        #character-palette.show { display: grid; animation: popIn 0.2s ease-out; }
+        .char-stamp-option { cursor: pointer; padding: 8px; border-radius: 8px; text-align: center; transition: transform 0.1s; }
+        .char-stamp-option:hover { transform: scale(1.1); }
+        .char-stamp-option.selected { background-color: #dbeafe; border: 2px solid #3b82f6; }
         .modal-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; display: none; align-items: center; justify-content: center; backdrop-filter: blur(3px); padding: 20px;
         }
@@ -72,6 +79,46 @@
 <body>
     <div id="flash"></div>
 
+
+    <!-- 0. CARD TEMPLATE SELECTOR MODAL -->
+    <div id="template-modal" class="modal-overlay">
+        <div class="modal-box" style="max-width: 500px;">
+            <h2 class="text-3xl font-bold mb-4 text-indigo-600">Choose a Card</h2>
+            <div id="template-list" class="grid grid-cols-2 gap-3 mb-4">
+                <div class="template-option p-4 border-2 border-pink-300 bg-pink-50 rounded-xl cursor-pointer hover:scale-105 transition-transform" onclick="selectTemplate('mommy')">
+                    <div class="text-3xl mb-2">👩‍💼</div>
+                    <div class="font-bold text-pink-600">Congrats Mommy!</div>
+                    <div class="text-sm text-gray-500">New job celebration</div>
+                </div>
+                <div class="template-option p-4 border-2 border-purple-300 bg-purple-50 rounded-xl cursor-pointer hover:scale-105 transition-transform" onclick="selectTemplate('birthday')">
+                    <div class="text-3xl mb-2">🎂</div>
+                    <div class="font-bold text-purple-600">Happy Birthday!</div>
+                    <div class="text-sm text-gray-500">Birthday wishes</div>
+                </div>
+                <div class="template-option p-4 border-2 border-green-300 bg-green-50 rounded-xl cursor-pointer hover:scale-105 transition-transform" onclick="selectTemplate('thankyou')">
+                    <div class="text-3xl mb-2">🙏</div>
+                    <div class="font-bold text-green-600">Thank You!</div>
+                    <div class="text-sm text-gray-500">Show appreciation</div>
+                </div>
+                <div class="template-option p-4 border-2 border-blue-300 bg-blue-50 rounded-xl cursor-pointer hover:scale-105 transition-transform" onclick="selectTemplate('getwell')">
+                    <div class="text-3xl mb-2">💐</div>
+                    <div class="font-bold text-blue-600">Get Well Soon!</div>
+                    <div class="text-sm text-gray-500">Healing wishes</div>
+                </div>
+                <div class="template-option p-4 border-2 border-yellow-300 bg-yellow-50 rounded-xl cursor-pointer hover:scale-105 transition-transform" onclick="selectTemplate('congrats')">
+                    <div class="text-3xl mb-2">🎉</div>
+                    <div class="font-bold text-yellow-600">Congratulations!</div>
+                    <div class="text-sm text-gray-500">General celebration</div>
+                </div>
+                <div class="template-option p-4 border-2 border-red-300 bg-red-50 rounded-xl cursor-pointer hover:scale-105 transition-transform" onclick="selectTemplate('love')">
+                    <div class="text-3xl mb-2">❤️</div>
+                    <div class="font-bold text-red-600">I Love You!</div>
+                    <div class="text-sm text-gray-500">Express your love</div>
+                </div>
+            </div>
+            <div class="flex justify-end"><button onclick="closeModals()" class="px-6 py-2 bg-gray-200 rounded-full font-bold text-lg">Close</button></div>
+        </div>
+    </div>
 
     <!-- 1. GALLERY MODAL -->
     <div id="gallery-modal" class="modal-overlay">
@@ -128,9 +175,9 @@
         <div class="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none">
             <div class="text-center mb-8 pointer-events-auto">
                 <h1 class="text-6xl md:text-8xl font-bold tracking-wider mb-2" id="main-title"></h1>
-                <p class="text-2xl md:text-4xl text-gray-600 font-['Patrick_Hand'] animate-float mt-4 bg-white/50 px-4 py-2 rounded-lg inline-block transform -rotate-2">We are so proud of your new job!</p>
+                <p id="subtitle-text" class="text-2xl md:text-4xl text-gray-600 font-['Patrick_Hand'] animate-float mt-4 bg-white/50 px-4 py-2 rounded-lg inline-block transform -rotate-2">We are so proud of your new job!</p>
             </div>
-            <div class="relative w-full max-w-4xl h-96 flex items-end justify-center space-x-4 md:space-x-12 pointer-events-auto pb-12">
+            <div id="characters-container" class="relative w-full max-w-4xl h-96 flex items-end justify-center space-x-4 md:space-x-12 pointer-events-auto pb-12">
                 <div class="character group relative w-32 h-48" onclick="characterJump(this)"><div class="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity text-xl font-bold text-pink-500 w-full text-center">YAY!</div><svg viewBox="0 0 100 150" class="w-full h-full overflow-visible"><circle cx="50" cy="30" r="20" fill="none" stroke="#000" stroke-width="3" filter="url(#rough-paper)"/><path d="M25 30 Q 15 20, 25 10 Q 35 0, 50 5 Q 65 0, 75 10 Q 85 20, 75 30" fill="none" stroke="#8B4513" stroke-width="3" filter="url(#rough-paper)"/><circle cx="43" cy="28" r="2" fill="#000"/><circle cx="57" cy="28" r="2" fill="#000"/><path d="M40 38 Q 50 45, 60 38" fill="none" stroke="#000" stroke-width="2"/><path d="M50 50 L 25 120 L 75 120 Z" fill="#FFB6C1" stroke="#000" stroke-width="3" filter="url(#rough-paper)"/><path d="M40 60 L 10 40" fill="none" stroke="#000" stroke-width="3" class="origin-bottom-right animate-wiggle"/><path d="M60 60 L 90 40" fill="none" stroke="#000" stroke-width="3" class="origin-bottom-left animate-wiggle" style="animation-delay: 0.5s"/><path d="M40 120 L 35 145" fill="none" stroke="#000" stroke-width="3"/><path d="M60 120 L 65 145" fill="none" stroke="#000" stroke-width="3"/></svg></div>
                 <div class="character group relative w-40 h-64" onclick="characterJump(this)"><div class="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity text-2xl font-bold text-purple-600 w-full text-center">HIRED!</div><svg viewBox="0 0 100 200" class="w-full h-full overflow-visible"><circle cx="50" cy="35" r="25" fill="none" stroke="#000" stroke-width="3" filter="url(#rough-paper)"/><path d="M20 35 C 10 10, 40 0, 50 5 C 60 0, 90 10, 80 35 L 85 80 L 15 80 Z" fill="#333" fill-opacity="0.1" stroke="#333" stroke-width="3" filter="url(#rough-paper)"/><g stroke="#000" stroke-width="2" fill="none"><circle cx="40" cy="35" r="8"/><circle cx="60" cy="35" r="8"/><line x1="48" y1="35" x2="52" y2="35"/><line x1="32" y1="35" x2="25" y2="32"/><line x1="68" y1="35" x2="75" y2="32"/></g><path d="M38 48 Q 50 55, 62 48" fill="none" stroke="#000" stroke-width="2"/><path d="M50 60 L 25 150 L 75 150 Z" fill="#E6E6FA" stroke="#000" stroke-width="3" filter="url(#rough-paper)"/><line x1="45" y1="75" x2="55" y2="75" stroke="#000" stroke-width="2"/><line x1="40" y1="90" x2="60" y2="90" stroke="#000" stroke-width="2"/><path d="M40 70 L 10 90" fill="none" stroke="#000" stroke-width="3"/><path d="M60 70 L 90 90" fill="none" stroke="#000" stroke-width="3"/><path d="M40 150 L 40 190" fill="none" stroke="#000" stroke-width="3"/><path d="M60 150 L 60 190" fill="none" stroke="#000" stroke-width="3"/></svg></div>
                 <div class="character group relative w-32 h-48" onclick="characterJump(this)"><div class="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity text-xl font-bold text-blue-500 w-full text-center">WOOHOO!</div><svg viewBox="0 0 100 150" class="w-full h-full overflow-visible"><circle cx="50" cy="30" r="20" fill="none" stroke="#000" stroke-width="3" filter="url(#rough-paper)"/><path d="M30 10 L 15 60 M 70 10 L 85 60 M 30 10 Q 50 -5, 70 10" fill="none" stroke="#5D4037" stroke-width="3" filter="url(#rough-paper)"/><circle cx="43" cy="28" r="2" fill="#000"/><circle cx="57" cy="28" r="2" fill="#000"/><path d="M40 38 Q 50 45, 60 38" fill="none" stroke="#000" stroke-width="2"/><path d="M50 50 L 25 120 L 75 120 Z" fill="#87CEEB" stroke="#000" stroke-width="3" filter="url(#rough-paper)"/><path d="M40 60 L 15 20" fill="none" stroke="#000" stroke-width="3" class="origin-bottom-right animate-wiggle"/><path d="M60 60 L 85 20" fill="none" stroke="#000" stroke-width="3" class="origin-bottom-left animate-wiggle" style="animation-delay: 0.3s"/><path d="M40 120 L 35 145" fill="none" stroke="#000" stroke-width="3"/><path d="M60 120 L 65 145" fill="none" stroke="#000" stroke-width="3"/></svg></div>
@@ -145,14 +192,29 @@
         <div id="sticker-palette">
             <div class="sticker-option" onclick="selectSticker('❤️')">❤️</div><div class="sticker-option" onclick="selectSticker('💖')">💖</div><div class="sticker-option" onclick="selectSticker('🦋')">🦋</div><div class="sticker-option" onclick="selectSticker('🌸')">🌸</div><div class="sticker-option" onclick="selectSticker('🌷')">🌷</div><div class="sticker-option" onclick="selectSticker('⭐')">⭐</div><div class="sticker-option" onclick="selectSticker('🌈')">🌈</div><div class="sticker-option" onclick="selectSticker('🦄')">🦄</div><div class="sticker-option" onclick="selectSticker('👑')">👑</div><div class="sticker-option" onclick="selectSticker('🎈')">🎈</div>
         </div>
+        <div id="character-palette">
+            <div class="char-stamp-option" onclick="selectCharacterStamp('girl1')" title="Ella">
+                <svg viewBox="0 0 100 150" width="50" height="75"><circle cx="50" cy="30" r="20" fill="none" stroke="#000" stroke-width="3"/><path d="M25 30 Q 15 20, 25 10 Q 35 0, 50 5 Q 65 0, 75 10 Q 85 20, 75 30" fill="none" stroke="#8B4513" stroke-width="3"/><circle cx="43" cy="28" r="2" fill="#000"/><circle cx="57" cy="28" r="2" fill="#000"/><path d="M40 38 Q 50 45, 60 38" fill="none" stroke="#000" stroke-width="2"/><path d="M50 50 L 25 120 L 75 120 Z" fill="#FFB6C1" stroke="#000" stroke-width="3"/><path d="M40 60 L 10 40" fill="none" stroke="#000" stroke-width="3"/><path d="M60 60 L 90 40" fill="none" stroke="#000" stroke-width="3"/><path d="M40 120 L 35 145" fill="none" stroke="#000" stroke-width="3"/><path d="M60 120 L 65 145" fill="none" stroke="#000" stroke-width="3"/></svg>
+                <div class="text-xs font-bold text-pink-500">Ella</div>
+            </div>
+            <div class="char-stamp-option" onclick="selectCharacterStamp('mommy')" title="Mommy">
+                <svg viewBox="0 0 100 200" width="50" height="80"><circle cx="50" cy="35" r="25" fill="none" stroke="#000" stroke-width="3"/><path d="M20 35 C 10 10, 40 0, 50 5 C 60 0, 90 10, 80 35" fill="none" stroke="#333" stroke-width="3"/><circle cx="40" cy="33" r="3" fill="#000"/><circle cx="60" cy="33" r="3" fill="#000"/><path d="M38 48 Q 50 55, 62 48" fill="none" stroke="#000" stroke-width="2"/><path d="M50 60 L 25 150 L 75 150 Z" fill="#E6E6FA" stroke="#000" stroke-width="3"/><path d="M40 70 L 10 90" fill="none" stroke="#000" stroke-width="3"/><path d="M60 70 L 90 90" fill="none" stroke="#000" stroke-width="3"/><path d="M40 150 L 40 190" fill="none" stroke="#000" stroke-width="3"/><path d="M60 150 L 60 190" fill="none" stroke="#000" stroke-width="3"/></svg>
+                <div class="text-xs font-bold text-purple-600">Mommy</div>
+            </div>
+            <div class="char-stamp-option" onclick="selectCharacterStamp('girl2')" title="Abigail">
+                <svg viewBox="0 0 100 150" width="50" height="75"><circle cx="50" cy="30" r="20" fill="none" stroke="#000" stroke-width="3"/><path d="M30 10 L 15 60 M 70 10 L 85 60 M 30 10 Q 50 -5, 70 10" fill="none" stroke="#5D4037" stroke-width="3"/><circle cx="43" cy="28" r="2" fill="#000"/><circle cx="57" cy="28" r="2" fill="#000"/><path d="M40 38 Q 50 45, 60 38" fill="none" stroke="#000" stroke-width="2"/><path d="M50 50 L 25 120 L 75 120 Z" fill="#87CEEB" stroke="#000" stroke-width="3"/><path d="M40 60 L 15 20" fill="none" stroke="#000" stroke-width="3"/><path d="M60 60 L 85 20" fill="none" stroke="#000" stroke-width="3"/><path d="M40 120 L 35 145" fill="none" stroke="#000" stroke-width="3"/><path d="M60 120 L 65 145" fill="none" stroke="#000" stroke-width="3"/></svg>
+                <div class="text-xs font-bold text-blue-500">Abigail</div>
+            </div>
+        </div>
         <div class="control-panel">
             <div class="flex space-x-2 border-r pr-4 border-gray-300">
                 <button class="color-btn bg-red-600 active" onclick="activatePen('#dc2626', this)"></button><button class="color-btn bg-blue-600" onclick="activatePen('#2563eb', this)"></button><button class="color-btn bg-green-600" onclick="activatePen('#16a34a', this)"></button><button class="color-btn bg-yellow-600" onclick="activatePen('#ca8a04', this)"></button><button class="color-btn bg-purple-600" onclick="activatePen('#9333ea', this)"></button><button class="color-btn bg-black" onclick="activatePen('#000000', this)"></button>
             </div>
             <div class="flex space-x-2 border-r pr-4 border-gray-300 pl-2">
-                <button id="eraser-btn" class="tool-btn" onclick="activateEraser()">🧽</button><button id="sticker-btn" class="tool-btn" onclick="toggleStickers()">🦋</button>
+                <button id="eraser-btn" class="tool-btn" onclick="activateEraser()">🧽</button><button id="sticker-btn" class="tool-btn" onclick="toggleStickers()">🦋</button><button id="character-btn" class="tool-btn" onclick="toggleCharacters()" title="Add Characters">👧</button>
             </div>
             <div class="flex space-x-2">
+                <button onclick="openTemplates()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-full font-['Patrick_Hand'] text-lg shadow-md transition-all whitespace-nowrap" title="Change Card">🎨</button>
                 <button onclick="openGallery()" class="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-full font-['Patrick_Hand'] text-lg shadow-md transition-all whitespace-nowrap">📂</button>
                 <button onclick="promptForSave()" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-full font-['Patrick_Hand'] text-lg shadow-md transition-all whitespace-nowrap">💾</button>
                 <button onclick="saveAsImageMobile()" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-full font-['Patrick_Hand'] text-lg shadow-md transition-all whitespace-nowrap">📷</button>
@@ -163,11 +225,191 @@
 
 
     <script>
-        const titleText = "CONGRATS MOMMY!";
+        // Card Template Definitions
+        const cardTemplates = {
+            mommy: {
+                title: "CONGRATS MOMMY!",
+                subtitle: "We are so proud of your new job!",
+                colors: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEEAD', '#FFCC5C', '#FF6B6B', '#D4A5A5'],
+                bgColor: '#fdf6e3',
+                bgGradient: '#f4e9c8',
+                dotColor: '#d4c5a3',
+                characters: [
+                    { label: 'YAY!', labelColor: 'text-pink-500', dress: '#FFB6C1', size: 'w-32 h-48' },
+                    { label: 'HIRED!', labelColor: 'text-purple-600', dress: '#E6E6FA', size: 'w-40 h-64', isMain: true },
+                    { label: 'WOOHOO!', labelColor: 'text-blue-500', dress: '#87CEEB', size: 'w-32 h-48' }
+                ],
+                stickers: ['❤️', '💖', '🦋', '🌸', '🌷', '⭐', '🌈', '🦄', '👑', '🎈']
+            },
+            birthday: {
+                title: "HAPPY BIRTHDAY!",
+                subtitle: "Wishing you an amazing day!",
+                colors: ['#FF6B6B', '#FFD93D', '#6BCB77', '#4D96FF', '#FF6B6B', '#FFD93D', '#6BCB77', '#4D96FF'],
+                bgColor: '#FFF5E6',
+                bgGradient: '#FFE4C4',
+                dotColor: '#FFD4A3',
+                characters: [
+                    { label: 'PARTY!', labelColor: 'text-orange-500', dress: '#FFD700', size: 'w-32 h-48' },
+                    { label: 'YAY!', labelColor: 'text-pink-600', dress: '#FF69B4', size: 'w-40 h-64', isMain: true },
+                    { label: 'CHEERS!', labelColor: 'text-purple-500', dress: '#9370DB', size: 'w-32 h-48' }
+                ],
+                stickers: ['🎂', '🎈', '🎁', '🎉', '🥳', '🎊', '🍰', '🕯️', '🎀', '⭐']
+            },
+            thankyou: {
+                title: "THANK YOU!",
+                subtitle: "Your kindness means the world!",
+                colors: ['#2ECC71', '#27AE60', '#1ABC9C', '#16A085', '#2ECC71', '#27AE60', '#1ABC9C', '#16A085'],
+                bgColor: '#E8F8F5',
+                bgGradient: '#D5F5E3',
+                dotColor: '#A9DFBF',
+                characters: [
+                    { label: 'THANKS!', labelColor: 'text-green-500', dress: '#98D8C8', size: 'w-32 h-48' },
+                    { label: 'SO KIND!', labelColor: 'text-teal-600', dress: '#48C9B0', size: 'w-40 h-64', isMain: true },
+                    { label: 'HUGS!', labelColor: 'text-emerald-500', dress: '#7DCEA0', size: 'w-32 h-48' }
+                ],
+                stickers: ['🙏', '💚', '🌿', '🍀', '🌻', '✨', '💝', '🤗', '🌸', '🦋']
+            },
+            getwell: {
+                title: "GET WELL SOON!",
+                subtitle: "Sending healing hugs your way!",
+                colors: ['#85C1E9', '#5DADE2', '#3498DB', '#2E86C1', '#85C1E9', '#5DADE2', '#3498DB', '#2E86C1'],
+                bgColor: '#EBF5FB',
+                bgGradient: '#D6EAF8',
+                dotColor: '#AED6F1',
+                characters: [
+                    { label: 'REST UP!', labelColor: 'text-blue-400', dress: '#AED6F1', size: 'w-32 h-48' },
+                    { label: 'FEEL BETTER!', labelColor: 'text-blue-600', dress: '#5DADE2', size: 'w-40 h-64', isMain: true },
+                    { label: 'HUGS!', labelColor: 'text-cyan-500', dress: '#76D7C4', size: 'w-32 h-48' }
+                ],
+                stickers: ['💐', '🌷', '💊', '🩹', '❤️‍🩹', '🧸', '☀️', '🌈', '💙', '🦋']
+            },
+            congrats: {
+                title: "CONGRATULATIONS!",
+                subtitle: "You did it! So proud of you!",
+                colors: ['#F1C40F', '#F39C12', '#E67E22', '#D35400', '#F1C40F', '#F39C12', '#E67E22', '#D35400'],
+                bgColor: '#FEF9E7',
+                bgGradient: '#FCF3CF',
+                dotColor: '#F9E79F',
+                characters: [
+                    { label: 'WOW!', labelColor: 'text-amber-500', dress: '#F4D03F', size: 'w-32 h-48' },
+                    { label: 'AMAZING!', labelColor: 'text-orange-600', dress: '#F5B041', size: 'w-40 h-64', isMain: true },
+                    { label: 'BRAVO!', labelColor: 'text-yellow-500', dress: '#EB984E', size: 'w-32 h-48' }
+                ],
+                stickers: ['🎉', '🏆', '🥇', '⭐', '🌟', '👏', '🎊', '✨', '💪', '🔥']
+            },
+            love: {
+                title: "I LOVE YOU!",
+                subtitle: "You mean everything to me!",
+                colors: ['#E74C3C', '#EC7063', '#F1948A', '#E74C3C', '#C0392B', '#EC7063', '#F1948A', '#C0392B'],
+                bgColor: '#FDEDEC',
+                bgGradient: '#FADBD8',
+                dotColor: '#F5B7B1',
+                characters: [
+                    { label: 'XOXO!', labelColor: 'text-red-400', dress: '#F1948A', size: 'w-32 h-48' },
+                    { label: 'FOREVER!', labelColor: 'text-red-600', dress: '#E74C3C', size: 'w-40 h-64', isMain: true },
+                    { label: 'HUGS!', labelColor: 'text-pink-500', dress: '#F8B4B4', size: 'w-32 h-48' }
+                ],
+                stickers: ['❤️', '💕', '💖', '💗', '💘', '💝', '😘', '🥰', '💑', '🌹']
+            }
+        };
+
+        let currentTemplate = 'mommy';
+        let colors = cardTemplates.mommy.colors;
+
+        function openTemplates() {
+            document.getElementById('template-modal').style.display = 'flex';
+        }
+
+        function selectTemplate(templateKey) {
+            currentTemplate = templateKey;
+            const template = cardTemplates[templateKey];
+            colors = template.colors;
+
+            // Update page title
+            document.title = template.title.replace('!', '') + ' Card';
+
+            // Update background
+            const container = document.getElementById('card-container');
+            container.style.backgroundColor = template.bgColor;
+            container.style.backgroundImage = `radial-gradient(${template.dotColor} 1px, transparent 1px), linear-gradient(to bottom, ${template.bgColor} 0%, ${template.bgGradient} 100%)`;
+
+            // Update title
+            const titleContainer = document.getElementById('main-title');
+            titleContainer.innerHTML = '';
+            template.title.split('').forEach((char, index) => {
+                const span = document.createElement('span');
+                span.textContent = char === ' ' ? '\u00A0' : char;
+                span.className = 'letter';
+                span.style.color = template.colors[index % template.colors.length];
+                span.style.display = 'inline-block';
+                span.style.animation = `wiggle 3s ease-in-out infinite`;
+                span.style.animationDelay = `${index * 0.1}s`;
+                titleContainer.appendChild(span);
+            });
+
+            // Update subtitle
+            document.getElementById('subtitle-text').textContent = template.subtitle;
+
+            // Update characters
+            updateCharacters(template);
+
+            // Update sticker palette
+            updateStickerPalette(template.stickers);
+
+            closeModals();
+        }
+
+        function updateCharacters(template) {
+            const charContainer = document.getElementById('characters-container');
+            charContainer.innerHTML = '';
+
+            template.characters.forEach((char, index) => {
+                const viewBox = char.isMain ? '0 0 100 200' : '0 0 100 150';
+                const headY = char.isMain ? 35 : 30;
+                const headR = char.isMain ? 25 : 20;
+                const bodyStart = char.isMain ? 60 : 50;
+                const bodyEnd = char.isMain ? 150 : 120;
+                const legEnd = char.isMain ? 190 : 145;
+
+                const characterHTML = `
+                    <div class="character group relative ${char.size}" onclick="characterJump(this)">
+                        <div class="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity text-xl font-bold ${char.labelColor} w-full text-center">${char.label}</div>
+                        <svg viewBox="${viewBox}" class="w-full h-full overflow-visible">
+                            <circle cx="50" cy="${headY}" r="${headR}" fill="none" stroke="#000" stroke-width="3" filter="url(#rough-paper)"/>
+                            <path d="M25 ${headY} Q 15 ${headY-10}, 25 ${headY-20} Q 35 ${headY-30}, 50 ${headY-25} Q 65 ${headY-30}, 75 ${headY-20} Q 85 ${headY-10}, 75 ${headY}" fill="none" stroke="#8B4513" stroke-width="3" filter="url(#rough-paper)"/>
+                            <circle cx="${50-7}" cy="${headY-2}" r="2" fill="#000"/>
+                            <circle cx="${50+7}" cy="${headY-2}" r="2" fill="#000"/>
+                            <path d="M${50-10} ${headY+8} Q 50 ${headY+15}, ${50+10} ${headY+8}" fill="none" stroke="#000" stroke-width="2"/>
+                            <path d="M50 ${bodyStart} L 25 ${bodyEnd} L 75 ${bodyEnd} Z" fill="${char.dress}" stroke="#000" stroke-width="3" filter="url(#rough-paper)"/>
+                            <path d="M40 ${bodyStart+10} L ${10 + (index === 0 ? 0 : index === 2 ? 5 : 0)} ${bodyStart - 20 + (index === 2 ? 0 : 20)}" fill="none" stroke="#000" stroke-width="3" class="origin-bottom-right animate-wiggle"/>
+                            <path d="M60 ${bodyStart+10} L ${90 - (index === 2 ? 0 : index === 0 ? 5 : 0)} ${bodyStart - 20 + (index === 0 ? 0 : 20)}" fill="none" stroke="#000" stroke-width="3" class="origin-bottom-left animate-wiggle" style="animation-delay: 0.5s"/>
+                            <path d="M40 ${bodyEnd} L 35 ${legEnd}" fill="none" stroke="#000" stroke-width="3"/>
+                            <path d="M60 ${bodyEnd} L 65 ${legEnd}" fill="none" stroke="#000" stroke-width="3"/>
+                        </svg>
+                    </div>
+                `;
+                charContainer.innerHTML += characterHTML;
+            });
+        }
+
+        function updateStickerPalette(stickers) {
+            const palette = document.getElementById('sticker-palette');
+            palette.innerHTML = '';
+            stickers.forEach(sticker => {
+                const div = document.createElement('div');
+                div.className = 'sticker-option';
+                div.textContent = sticker;
+                div.onclick = () => selectSticker(sticker);
+                palette.appendChild(div);
+            });
+            currentSticker = stickers[0];
+        }
+
+        // Initialize with default template
         const titleContainer = document.getElementById('main-title');
-        const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEEAD', '#FFCC5C', '#FF6B6B', '#D4A5A5'];
-        titleText.split('').forEach((char, index) => {
-            const span = document.createElement('span'); span.textContent = char === ' ' ? '\u00A0' : char; span.className = 'letter'; span.style.color = colors[index % colors.length]; span.style.display = 'inline-block'; span.style.animation = `wiggle 3s ease-in-out infinite`; span.style.animationDelay = `${index * 0.1}s`; titleContainer.appendChild(span);
+        const defaultTemplate = cardTemplates[currentTemplate];
+        defaultTemplate.title.split('').forEach((char, index) => {
+            const span = document.createElement('span'); span.textContent = char === ' ' ? '\u00A0' : char; span.className = 'letter'; span.style.color = defaultTemplate.colors[index % defaultTemplate.colors.length]; span.style.display = 'inline-block'; span.style.animation = `wiggle 3s ease-in-out infinite`; span.style.animationDelay = `${index * 0.1}s`; titleContainer.appendChild(span);
         });
 
 
@@ -175,6 +417,7 @@
         const cardContainer = document.getElementById('card-container');
         const ctx = canvas.getContext('2d');
         let allStrokes = [], currentStroke = null, mode = 'pen', isDrawing = false, lastX = 0, lastY = 0, currentPenColor = '#dc2626', currentSticker = '❤️';
+        let currentCharacter = 'girl1'; // girl1, mommy, girl2
         let generatedImgData = null; // Store for download
 
 
@@ -187,6 +430,9 @@
             allStrokes.forEach(stroke => {
                 if (stroke.type === 'sticker') {
                     ctx.globalCompositeOperation = 'source-over'; ctx.font = "50px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(stroke.sticker, stroke.x * canvas.width, stroke.y * canvas.height);
+                } else if (stroke.type === 'character') {
+                    ctx.globalCompositeOperation = 'source-over';
+                    drawCharacter(stroke.character, stroke.x * canvas.width, stroke.y * canvas.height, stroke.dressColor);
                 } else {
                     ctx.globalCompositeOperation = stroke.type === 'eraser' ? 'destination-out' : 'source-over'; ctx.strokeStyle = stroke.color; ctx.lineWidth = stroke.type === 'eraser' ? 30 : 5;
                     if (stroke.points.length > 0) {
@@ -215,13 +461,26 @@
                 ctx.globalCompositeOperation = 'source-over'; ctx.font = "50px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(currentSticker, pos.x, pos.y);
                 return;
             }
+            if (mode === 'character') {
+                const template = cardTemplates[currentTemplate];
+                const charData = template.characters.find(c =>
+                    (currentCharacter === 'girl1' && !c.isMain && template.characters.indexOf(c) === 0) ||
+                    (currentCharacter === 'mommy' && c.isMain) ||
+                    (currentCharacter === 'girl2' && !c.isMain && template.characters.indexOf(c) === 2)
+                ) || template.characters[currentCharacter === 'mommy' ? 1 : currentCharacter === 'girl1' ? 0 : 2];
+                const dressColor = charData ? charData.dress : '#FFB6C1';
+                allStrokes.push({ type: 'character', character: currentCharacter, x: pos.relX, y: pos.relY, dressColor: dressColor });
+                ctx.globalCompositeOperation = 'source-over';
+                drawCharacter(currentCharacter, pos.x, pos.y, dressColor);
+                return;
+            }
             isDrawing = true; lastX = pos.x; lastY = pos.y;
             currentStroke = { type: mode, color: currentPenColor, points: [{x: pos.relX, y: pos.relY}] };
         }
 
 
         function moveInteraction(e) {
-            if (!isDrawing || mode === 'stamp') return;
+            if (!isDrawing || mode === 'stamp' || mode === 'character') return;
             const pos = getPos(e);
             if (mode === 'eraser') { ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = 30; ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(pos.x, pos.y); ctx.stroke(); } 
             else { ctx.globalCompositeOperation = 'source-over'; ctx.strokeStyle = currentPenColor; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(pos.x, pos.y); ctx.stroke(); }
@@ -322,11 +581,153 @@
 
 
         function showFlash() { const f = document.getElementById('flash'); f.style.opacity = '1'; setTimeout(() => f.style.opacity = '0', 200); }
-        function resetUI() { document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active')); document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active')); document.getElementById('sticker-palette').classList.remove('show'); }
+        function resetUI() { document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active')); document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active')); document.getElementById('sticker-palette').classList.remove('show'); document.getElementById('character-palette').classList.remove('show'); }
         function activatePen(color, btn) { mode = 'pen'; currentPenColor = color; resetUI(); btn.classList.add('active'); }
         function activateEraser() { mode = 'eraser'; resetUI(); document.getElementById('eraser-btn').classList.add('active'); }
         function toggleStickers() { const p = document.getElementById('sticker-palette'); const b = document.getElementById('sticker-btn'); if(p.classList.contains('show')) { p.classList.remove('show'); } else { resetUI(); b.classList.add('active'); p.classList.add('show'); mode = 'stamp'; } }
         function selectSticker(s) { currentSticker = s; mode = 'stamp'; document.querySelectorAll('.sticker-option').forEach(o => o.classList.toggle('selected', o.innerText === s)); }
+        function toggleCharacters() { const p = document.getElementById('character-palette'); const b = document.getElementById('character-btn'); if(p.classList.contains('show')) { p.classList.remove('show'); } else { resetUI(); b.classList.add('active'); p.classList.add('show'); mode = 'character'; } }
+        function selectCharacterStamp(charType) { currentCharacter = charType; mode = 'character'; document.querySelectorAll('.char-stamp-option').forEach(o => o.classList.remove('selected')); event.currentTarget.classList.add('selected'); }
+
+        function drawCharacter(charType, x, y, dressColor) {
+            const scale = 0.8;
+            const isMommy = charType === 'mommy';
+            const height = isMommy ? 120 * scale : 90 * scale;
+            const width = isMommy ? 60 * scale : 50 * scale;
+
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            if (isMommy) {
+                // Head
+                ctx.beginPath();
+                ctx.arc(0, -height * 0.7, width * 0.4, 0, Math.PI * 2);
+                ctx.stroke();
+                // Hair
+                ctx.beginPath();
+                ctx.strokeStyle = '#333';
+                ctx.moveTo(-width * 0.4, -height * 0.7);
+                ctx.quadraticCurveTo(-width * 0.5, -height * 0.95, 0, -height * 0.9);
+                ctx.quadraticCurveTo(width * 0.5, -height * 0.95, width * 0.4, -height * 0.7);
+                ctx.stroke();
+                ctx.strokeStyle = '#000';
+                // Eyes
+                ctx.beginPath();
+                ctx.arc(-width * 0.15, -height * 0.72, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(width * 0.15, -height * 0.72, 3, 0, Math.PI * 2);
+                ctx.fill();
+                // Smile
+                ctx.beginPath();
+                ctx.arc(0, -height * 0.65, width * 0.15, 0.1 * Math.PI, 0.9 * Math.PI);
+                ctx.stroke();
+                // Body/Dress
+                ctx.beginPath();
+                ctx.fillStyle = dressColor;
+                ctx.moveTo(0, -height * 0.45);
+                ctx.lineTo(-width * 0.4, height * 0.15);
+                ctx.lineTo(width * 0.4, height * 0.15);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                // Arms
+                ctx.beginPath();
+                ctx.moveTo(-width * 0.2, -height * 0.35);
+                ctx.lineTo(-width * 0.6, -height * 0.2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(width * 0.2, -height * 0.35);
+                ctx.lineTo(width * 0.6, -height * 0.2);
+                ctx.stroke();
+                // Legs
+                ctx.beginPath();
+                ctx.moveTo(-width * 0.15, height * 0.15);
+                ctx.lineTo(-width * 0.15, height * 0.4);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(width * 0.15, height * 0.15);
+                ctx.lineTo(width * 0.15, height * 0.4);
+                ctx.stroke();
+            } else {
+                // Girl characters
+                const isGirl2 = charType === 'girl2';
+                // Head
+                ctx.beginPath();
+                ctx.arc(0, -height * 0.65, width * 0.35, 0, Math.PI * 2);
+                ctx.stroke();
+                // Hair
+                ctx.strokeStyle = isGirl2 ? '#5D4037' : '#8B4513';
+                if (isGirl2) {
+                    // Pigtails style
+                    ctx.beginPath();
+                    ctx.moveTo(-width * 0.3, -height * 0.8);
+                    ctx.lineTo(-width * 0.5, -height * 0.3);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(width * 0.3, -height * 0.8);
+                    ctx.lineTo(width * 0.5, -height * 0.3);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(-width * 0.3, -height * 0.8);
+                    ctx.quadraticCurveTo(0, -height * 0.95, width * 0.3, -height * 0.8);
+                    ctx.stroke();
+                } else {
+                    // Wavy hair
+                    ctx.beginPath();
+                    ctx.moveTo(-width * 0.35, -height * 0.65);
+                    ctx.quadraticCurveTo(-width * 0.45, -height * 0.85, -width * 0.25, -height * 0.9);
+                    ctx.quadraticCurveTo(0, -height * 0.95, width * 0.25, -height * 0.9);
+                    ctx.quadraticCurveTo(width * 0.45, -height * 0.85, width * 0.35, -height * 0.65);
+                    ctx.stroke();
+                }
+                ctx.strokeStyle = '#000';
+                // Eyes
+                ctx.beginPath();
+                ctx.arc(-width * 0.12, -height * 0.67, 2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(width * 0.12, -height * 0.67, 2, 0, Math.PI * 2);
+                ctx.fill();
+                // Smile
+                ctx.beginPath();
+                ctx.arc(0, -height * 0.6, width * 0.12, 0.1 * Math.PI, 0.9 * Math.PI);
+                ctx.stroke();
+                // Body/Dress
+                ctx.beginPath();
+                ctx.fillStyle = dressColor;
+                ctx.moveTo(0, -height * 0.4);
+                ctx.lineTo(-width * 0.4, height * 0.2);
+                ctx.lineTo(width * 0.4, height * 0.2);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                // Arms
+                const armUpY = isGirl2 ? -height * 0.55 : -height * 0.25;
+                ctx.beginPath();
+                ctx.moveTo(-width * 0.2, -height * 0.3);
+                ctx.lineTo(-width * 0.6, armUpY);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(width * 0.2, -height * 0.3);
+                ctx.lineTo(width * 0.6, armUpY);
+                ctx.stroke();
+                // Legs
+                ctx.beginPath();
+                ctx.moveTo(-width * 0.15, height * 0.2);
+                ctx.lineTo(-width * 0.2, height * 0.45);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(width * 0.15, height * 0.2);
+                ctx.lineTo(width * 0.2, height * 0.45);
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
         function characterJump(element) { element.style.transform = "translateY(-50px) scale(1.1)"; setTimeout(() => { element.style.transform = "translateY(0) scale(1)"; }, 300); const rect = element.getBoundingClientRect(); confetti({ particleCount: 30, spread: 50, origin: { x: (rect.left + rect.width / 2) / window.innerWidth, y: (rect.top + rect.height / 2) / window.innerHeight }, colors: ['#FFB6C1', '#87CEEB', '#E6E6FA'] }); }
         function celebrate() { const duration = 3000; const end = Date.now() + duration; (function frame() { confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: colors }); confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: colors }); if (Date.now() < end) requestAnimationFrame(frame); }()); }
 
