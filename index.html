@@ -1114,15 +1114,18 @@
 
                     // Store frame for GIF encoding (reduce size for GIF)
                     const gifCanvas = document.createElement('canvas');
-                    const maxWidth = 800;
+                    // More aggressive size reduction for mobile
+                    const isMobile = /iPad|iPhone|iPod|Android/i.test(navigator.userAgent);
+                    const maxWidth = isMobile ? 480 : 600; // Smaller for mobile
                     const scale = Math.min(1, maxWidth / capturedCanvas.width);
                     gifCanvas.width = capturedCanvas.width * scale;
                     gifCanvas.height = capturedCanvas.height * scale;
                     const gifCtx = gifCanvas.getContext('2d');
                     gifCtx.drawImage(capturedCanvas, 0, 0, gifCanvas.width, gifCanvas.height);
 
-                    // Store every 3rd frame for GIF (reduces file size)
-                    if (capturedFrames.length % 3 === 0 || capturedFrames.length === 0) {
+                    // Store fewer frames on mobile (every 5th frame vs every 3rd)
+                    const frameInterval = isMobile ? 5 : 3;
+                    if (capturedFrames.length % frameInterval === 0 || capturedFrames.length === 0) {
                         capturedFrames.push(gifCanvas);
                     }
 
@@ -1193,24 +1196,44 @@
 
             // Disable button and show processing message
             const gifBtn = document.getElementById('gif-download-btn');
+            const originalHTML = gifBtn.innerHTML;
             gifBtn.disabled = true;
             gifBtn.innerHTML = '<span>⏳</span><span>Creating GIF...</span>';
 
-            // Create GIF using gif.js
+            console.log(`Starting GIF creation with ${capturedFrames.length} frames at ${capturedFrames[0].width}x${capturedFrames[0].height}`);
+
+            // Detect mobile for optimized settings
+            const isMobile = /iPad|iPhone|iPod|Android/i.test(navigator.userAgent);
+
+            // Create GIF using gif.js with mobile-optimized settings
             const gif = new GIF({
-                workers: 2,
-                quality: 10,
+                workers: isMobile ? 1 : 2, // Use 1 worker on mobile for better compatibility
+                quality: isMobile ? 20 : 10, // Lower quality on mobile (higher number = lower quality)
                 width: capturedFrames[0].width,
                 height: capturedFrames[0].height,
-                workerScript: 'https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js'
+                workerScript: 'https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js',
+                debug: true
             });
 
-            // Add frames to GIF
+            // Set timeout to detect if GIF creation hangs (30 seconds)
+            const timeoutId = setTimeout(() => {
+                console.error('GIF creation timeout');
+                alert('GIF creation is taking too long. Try again or use the video option instead.');
+                gifBtn.disabled = false;
+                gifBtn.innerHTML = originalHTML;
+                gif.abort();
+            }, 30000);
+
+            // Add frames to GIF with longer delay on mobile
+            const frameDelay = isMobile ? 150 : 100; // Slower animation on mobile
             capturedFrames.forEach((frameCanvas, index) => {
-                gif.addFrame(frameCanvas, { delay: 100 }); // 100ms delay = ~10fps
+                gif.addFrame(frameCanvas, { delay: frameDelay });
             });
 
             gif.on('finished', (blob) => {
+                clearTimeout(timeoutId);
+                console.log('GIF created successfully, size:', blob.size);
+
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.style.display = 'none';
@@ -1228,6 +1251,10 @@
                 showFlash();
                 closeModals();
 
+                // Reset button
+                gifBtn.disabled = false;
+                gifBtn.innerHTML = originalHTML;
+
                 // Cleanup frames
                 recordingCanvas = null;
                 recordingContext = null;
@@ -1236,11 +1263,28 @@
 
             gif.on('progress', (progress) => {
                 const percent = Math.round(progress * 100);
+                console.log('GIF progress:', percent + '%');
                 gifBtn.innerHTML = `<span>⏳</span><span>Creating GIF... ${percent}%</span>`;
             });
 
+            gif.on('error', (error) => {
+                clearTimeout(timeoutId);
+                console.error('GIF creation error:', error);
+                alert('Failed to create GIF. Please try the video option instead.');
+                gifBtn.disabled = false;
+                gifBtn.innerHTML = originalHTML;
+            });
+
             // Start rendering
-            gif.render();
+            try {
+                gif.render();
+            } catch (error) {
+                clearTimeout(timeoutId);
+                console.error('GIF render error:', error);
+                alert('Failed to create GIF: ' + error.message);
+                gifBtn.disabled = false;
+                gifBtn.innerHTML = originalHTML;
+            }
         }
     </script>
 </body>
