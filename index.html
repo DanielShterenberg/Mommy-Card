@@ -237,7 +237,8 @@
                 <button class="color-btn bg-red-600 active" onclick="activatePen('#dc2626', this)"></button><button class="color-btn bg-blue-600" onclick="activatePen('#2563eb', this)"></button><button class="color-btn bg-green-600" onclick="activatePen('#16a34a', this)"></button><button class="color-btn bg-yellow-600" onclick="activatePen('#ca8a04', this)"></button><button class="color-btn bg-purple-600" onclick="activatePen('#9333ea', this)"></button><button class="color-btn bg-black" onclick="activatePen('#000000', this)"></button>
             </div>
             <div class="flex space-x-2 border-r pr-4 border-gray-300 pl-2">
-                <button id="eraser-btn" class="tool-btn" onclick="activateEraser()">🧽</button><button id="sticker-btn" class="tool-btn" onclick="toggleStickers()">🦋</button><button id="character-btn" class="tool-btn" onclick="toggleCharacters()" title="Add Characters">👧</button><button id="visibility-btn" class="tool-btn" onclick="toggleVisibilityPalette()" title="Show/Hide Characters">👁️</button>
+                <button id="eraser-btn" class="tool-btn" onclick="activateEraser()">🧽</button><button id="sticker-btn" class="tool-btn" onclick="toggleStickers()">🦋</button><button id="photo-btn" class="tool-btn" onclick="document.getElementById('photo-upload').click()" title="Add Photo">📸</button><button id="character-btn" class="tool-btn" onclick="toggleCharacters()" title="Add Characters">👧</button><button id="visibility-btn" class="tool-btn" onclick="toggleVisibilityPalette()" title="Show/Hide Characters">👁️</button>
+                <input type="file" id="photo-upload" accept="image/*" style="display:none" onchange="handlePhotoUpload(this)">
             </div>
             <div class="flex space-x-2">
                 <button onclick="openTemplates()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-full font-['Patrick_Hand'] text-lg shadow-md transition-all whitespace-nowrap" title="Change Card">🎨</button>
@@ -298,15 +299,15 @@
             },
             getwell: {
                 title: "GET WELL SOON!",
-                subtitle: "Sending healing hugs your way!",
+                subtitle: "Feel better soon, Deda! We love you!",
                 colors: ['#85C1E9', '#5DADE2', '#3498DB', '#2E86C1', '#85C1E9', '#5DADE2', '#3498DB', '#2E86C1'],
                 bgColor: '#EBF5FB',
                 bgGradient: '#D6EAF8',
                 dotColor: '#AED6F1',
                 characters: [
-                    { label: 'REST UP!', labelColor: 'text-blue-400', dress: '#AED6F1', size: 'w-32 h-48' },
-                    { label: 'FEEL BETTER!', labelColor: 'text-blue-600', dress: '#5DADE2', size: 'w-40 h-64', isMain: true },
-                    { label: 'HUGS!', labelColor: 'text-cyan-500', dress: '#76D7C4', size: 'w-32 h-48' }
+                    { label: 'GET WELL!', labelColor: 'text-blue-400', dress: '#AED6F1', size: 'w-32 h-48' },
+                    { label: 'LOVE DEDA!', labelColor: 'text-blue-600', dress: '#5DADE2', size: 'w-40 h-64', isMain: true },
+                    { label: 'FEEL BETTER!', labelColor: 'text-cyan-500', dress: '#76D7C4', size: 'w-32 h-48' }
                 ],
                 stickers: ['💐', '🌷', '💊', '🩹', '❤️‍🩹', '🧸', '☀️', '🌈', '💙', '🦋']
             },
@@ -489,6 +490,7 @@
         let allStrokes = [], currentStroke = null, mode = 'pen', isDrawing = false, lastX = 0, lastY = 0, currentPenColor = '#dc2626', currentSticker = '❤️';
         let currentCharacter = 'girl1'; // girl1, mommy, girl2
         let generatedImgData = null; // Store for download
+        let uploadedPhoto = null; // Store uploaded photo
 
 
         function resizeCanvas() { if (!cardContainer) return; canvas.width = cardContainer.clientWidth; canvas.height = cardContainer.clientHeight; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; redrawAll(); }
@@ -503,6 +505,13 @@
                 } else if (stroke.type === 'character') {
                     ctx.globalCompositeOperation = 'source-over';
                     drawCharacter(stroke.character, stroke.x * canvas.width, stroke.y * canvas.height, stroke.dressColor);
+                } else if (stroke.type === 'photo') {
+                    const img = new Image();
+                    img.onload = function() {
+                        ctx.globalCompositeOperation = 'source-over';
+                        drawPhoto(img, stroke.x * canvas.width, stroke.y * canvas.height, stroke.size);
+                    };
+                    img.src = stroke.imageData;
                 } else {
                     ctx.globalCompositeOperation = stroke.type === 'eraser' ? 'destination-out' : 'source-over'; ctx.strokeStyle = stroke.color; ctx.lineWidth = stroke.type === 'eraser' ? 30 : 5;
                     if (stroke.points.length > 0) {
@@ -544,13 +553,20 @@
                 drawCharacter(currentCharacter, pos.x, pos.y, dressColor);
                 return;
             }
+            if (mode === 'photo' && uploadedPhoto) {
+                const photoSize = 150; // Size of the photo stamp
+                allStrokes.push({ type: 'photo', x: pos.relX, y: pos.relY, size: photoSize, imageData: uploadedPhoto.src });
+                ctx.globalCompositeOperation = 'source-over';
+                drawPhoto(uploadedPhoto, pos.x, pos.y, photoSize);
+                return;
+            }
             isDrawing = true; lastX = pos.x; lastY = pos.y;
             currentStroke = { type: mode, color: currentPenColor, points: [{x: pos.relX, y: pos.relY}] };
         }
 
 
         function moveInteraction(e) {
-            if (!isDrawing || mode === 'stamp' || mode === 'character') return;
+            if (!isDrawing || mode === 'stamp' || mode === 'character' || mode === 'photo') return;
             const pos = getPos(e);
             if (mode === 'eraser') { ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = 30; ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(pos.x, pos.y); ctx.stroke(); } 
             else { ctx.globalCompositeOperation = 'source-over'; ctx.strokeStyle = currentPenColor; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(pos.x, pos.y); ctx.stroke(); }
@@ -658,6 +674,25 @@
         function selectSticker(s) { currentSticker = s; mode = 'stamp'; document.querySelectorAll('.sticker-option').forEach(o => o.classList.toggle('selected', o.innerText === s)); }
         function toggleCharacters() { const p = document.getElementById('character-palette'); const b = document.getElementById('character-btn'); if(p.classList.contains('show')) { p.classList.remove('show'); } else { resetUI(); b.classList.add('active'); p.classList.add('show'); mode = 'character'; } }
         function selectCharacterStamp(charType) { currentCharacter = charType; mode = 'character'; document.querySelectorAll('.char-stamp-option').forEach(o => o.classList.remove('selected')); event.currentTarget.classList.add('selected'); }
+
+        function handlePhotoUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    uploadedPhoto = img;
+                    mode = 'photo';
+                    resetUI();
+                    document.getElementById('photo-btn').classList.add('active');
+                    alert('Photo loaded! Click anywhere on the card to place it.');
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
 
         function toggleVisibilityPalette() {
             const p = document.getElementById('visibility-palette');
@@ -835,6 +870,41 @@
             }
             ctx.restore();
         }
+
+        function drawPhoto(img, x, y, size) {
+            ctx.save();
+            ctx.globalCompositeOperation = 'source-over';
+
+            // Calculate aspect ratio
+            const aspectRatio = img.width / img.height;
+            let drawWidth = size;
+            let drawHeight = size;
+
+            if (aspectRatio > 1) {
+                // Landscape
+                drawHeight = size / aspectRatio;
+            } else {
+                // Portrait or square
+                drawWidth = size * aspectRatio;
+            }
+
+            // Add a white border/frame effect
+            const borderSize = 10;
+            ctx.fillStyle = 'white';
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetX = 3;
+            ctx.shadowOffsetY = 3;
+            ctx.fillRect(x - drawWidth/2 - borderSize, y - drawHeight/2 - borderSize,
+                        drawWidth + borderSize*2, drawHeight + borderSize*2);
+
+            // Draw the photo
+            ctx.shadowColor = 'transparent';
+            ctx.drawImage(img, x - drawWidth/2, y - drawHeight/2, drawWidth, drawHeight);
+
+            ctx.restore();
+        }
+
         function characterJump(element) { element.style.transform = "translateY(-50px) scale(1.1)"; setTimeout(() => { element.style.transform = "translateY(0) scale(1)"; }, 300); const rect = element.getBoundingClientRect(); confetti({ particleCount: 30, spread: 50, origin: { x: (rect.left + rect.width / 2) / window.innerWidth, y: (rect.top + rect.height / 2) / window.innerHeight }, colors: ['#FFB6C1', '#87CEEB', '#E6E6FA'] }); }
         function celebrate() { const duration = 3000; const end = Date.now() + duration; (function frame() { confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: colors }); confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: colors }); if (Date.now() < end) requestAnimationFrame(frame); }()); }
 
