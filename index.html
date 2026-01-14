@@ -846,11 +846,13 @@
         let mediaRecorder = null;
         let recordedChunks = [];
         let isRecording = false;
+        let recordingCanvas = null;
+        let recordingContext = null;
         let recordingStream = null;
 
         async function toggleRecording() {
             if (isRecording) {
-                stopRecording();
+                return; // Don't allow stopping early
             } else {
                 await startRecording();
             }
@@ -864,28 +866,21 @@
                 recordBtn.classList.add('bg-gray-600', 'hover:bg-gray-700');
 
                 recordedChunks = [];
+                isRecording = true;
 
-                // Capture the entire card container
+                // Hide UI for recording
+                const ui = document.querySelector('.ui-wrapper');
+                ui.style.display = 'none';
+
+                // Create offscreen canvas for recording
                 const cardContainer = document.getElementById('card-container');
+                recordingCanvas = document.createElement('canvas');
+                recordingCanvas.width = cardContainer.clientWidth;
+                recordingCanvas.height = cardContainer.clientHeight;
+                recordingContext = recordingCanvas.getContext('2d');
 
-                // Create a combined stream
-                const canvasStream = canvas.captureStream(30); // 30 FPS
-
-                // Check if we can capture the entire display (for confetti)
-                try {
-                    // Try to get display media (works better for capturing confetti)
-                    recordingStream = await navigator.mediaDevices.getDisplayMedia({
-                        video: {
-                            displaySurface: 'browser',
-                            frameRate: 30
-                        },
-                        audio: false
-                    });
-                } catch (e) {
-                    // Fallback to canvas stream only
-                    console.log('Using canvas stream only');
-                    recordingStream = canvasStream;
-                }
+                // Get stream from canvas
+                recordingStream = recordingCanvas.captureStream(30); // 30 FPS
 
                 // Set up MediaRecorder
                 const options = {
@@ -896,53 +891,92 @@
                 // Fallback for browsers that don't support vp9
                 if (!MediaRecorder.isTypeSupported(options.mimeType)) {
                     options.mimeType = 'video/webm;codecs=vp8';
-                }
-
-                if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-                    options.mimeType = 'video/webm';
+                    if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                        options.mimeType = 'video/webm';
+                    }
                 }
 
                 mediaRecorder = new MediaRecorder(recordingStream, options);
 
                 mediaRecorder.ondataavailable = (event) => {
-                    if (event.data.size > 0) {
+                    if (event.data && event.data.size > 0) {
                         recordedChunks.push(event.data);
                     }
                 };
 
                 mediaRecorder.onstop = () => {
+                    ui.style.display = 'flex';
                     downloadRecording();
                     if (recordingStream) {
                         recordingStream.getTracks().forEach(track => track.stop());
                     }
+                    recordingCanvas = null;
+                    recordingContext = null;
                 };
 
                 mediaRecorder.start(100); // Collect data every 100ms
-                isRecording = true;
 
-                // Automatically trigger confetti
-                celebrate();
+                // Start capturing frames
+                captureFrames();
+
+                // Automatically trigger confetti after a brief delay
+                setTimeout(() => {
+                    celebrate();
+                }, 100);
 
                 // Auto-stop after 4 seconds (confetti duration is 3 seconds + 1 second buffer)
                 setTimeout(() => {
-                    if (isRecording) {
-                        stopRecording();
-                    }
+                    stopRecording();
                 }, 4000);
 
             } catch (error) {
                 console.error('Error starting recording:', error);
-                alert('Could not start recording. Please make sure you grant permission to record the screen.');
+                alert('Could not start recording: ' + error.message);
+                document.querySelector('.ui-wrapper').style.display = 'flex';
                 resetRecordingButton();
+                isRecording = false;
             }
         }
 
+        function captureFrames() {
+            if (!isRecording || !recordingContext) return;
+
+            const cardContainer = document.getElementById('card-container');
+
+            // Use html2canvas to capture the current frame
+            html2canvas(cardContainer, {
+                scale: 1,
+                backgroundColor: null,
+                logging: false,
+                useCORS: true
+            }).then(capturedCanvas => {
+                if (recordingContext && isRecording) {
+                    // Draw the captured frame to our recording canvas
+                    recordingContext.clearRect(0, 0, recordingCanvas.width, recordingCanvas.height);
+                    recordingContext.drawImage(capturedCanvas, 0, 0);
+
+                    // Continue capturing frames at ~30 FPS
+                    setTimeout(() => captureFrames(), 33);
+                }
+            }).catch(err => {
+                console.error('Frame capture error:', err);
+                // Continue trying to capture frames
+                if (isRecording) {
+                    setTimeout(() => captureFrames(), 33);
+                }
+            });
+        }
+
         function stopRecording() {
+            if (!isRecording) return;
+
+            isRecording = false;
+
             if (mediaRecorder && mediaRecorder.state !== 'inactive') {
                 mediaRecorder.stop();
-                isRecording = false;
-                resetRecordingButton();
             }
+
+            resetRecordingButton();
         }
 
         function resetRecordingButton() {
@@ -954,7 +988,7 @@
 
         function downloadRecording() {
             if (recordedChunks.length === 0) {
-                alert('No recording data available');
+                alert('No recording data available. The recording may have failed.');
                 return;
             }
 
