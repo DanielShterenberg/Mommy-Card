@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Indie+Flower&family=Patrick+Hand&display=swap" rel="stylesheet">
     <style>
         body {
@@ -171,6 +172,25 @@
             <a id="download-link" style="display:none"></a>
             <div class="flex gap-2 w-full">
                 <button onclick="triggerDownload()" class="flex-1 px-4 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold text-lg shadow">Download ⬇️</button>
+                <button onclick="closeModals()" class="px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-bold text-lg">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. VIDEO DOWNLOAD MODAL (Choose format) -->
+    <div id="video-modal" class="modal-overlay">
+        <div class="modal-box flex flex-col items-center">
+            <h2 class="text-2xl font-bold mb-2 text-center">🎬 Recording Complete!</h2>
+            <p class="text-center text-gray-500 mb-4 text-sm">Choose your download format:</p>
+            <div class="flex flex-col gap-3 w-full">
+                <button onclick="downloadAsVideo()" class="px-6 py-4 bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold text-lg shadow-lg flex items-center justify-center gap-2">
+                    <span>📹</span>
+                    <span>Download as Video (.webm)</span>
+                </button>
+                <button id="gif-download-btn" onclick="downloadAsGif()" class="px-6 py-4 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-bold text-lg shadow-lg flex items-center justify-center gap-2">
+                    <span>🎞️</span>
+                    <span>Download as GIF</span>
+                </button>
                 <button onclick="closeModals()" class="px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-bold text-lg">Close</button>
             </div>
         </div>
@@ -845,6 +865,7 @@
         // VIDEO RECORDING FEATURE
         let mediaRecorder = null;
         let recordedChunks = [];
+        let capturedFrames = []; // Store frames for GIF encoding
         let isRecording = false;
         let recordingCanvas = null;
         let recordingContext = null;
@@ -866,6 +887,7 @@
                 recordBtn.classList.add('bg-gray-600', 'hover:bg-gray-700');
 
                 recordedChunks = [];
+                capturedFrames = [];
                 isRecording = true;
 
                 // Hide UI for recording
@@ -906,12 +928,10 @@
 
                 mediaRecorder.onstop = () => {
                     ui.style.display = 'flex';
-                    downloadRecording();
+                    showDownloadModal();
                     if (recordingStream) {
                         recordingStream.getTracks().forEach(track => track.stop());
                     }
-                    recordingCanvas = null;
-                    recordingContext = null;
                 };
 
                 mediaRecorder.start(100); // Collect data every 100ms
@@ -955,6 +975,20 @@
                     recordingContext.clearRect(0, 0, recordingCanvas.width, recordingCanvas.height);
                     recordingContext.drawImage(capturedCanvas, 0, 0);
 
+                    // Store frame for GIF encoding (reduce size for GIF)
+                    const gifCanvas = document.createElement('canvas');
+                    const maxWidth = 800;
+                    const scale = Math.min(1, maxWidth / capturedCanvas.width);
+                    gifCanvas.width = capturedCanvas.width * scale;
+                    gifCanvas.height = capturedCanvas.height * scale;
+                    const gifCtx = gifCanvas.getContext('2d');
+                    gifCtx.drawImage(capturedCanvas, 0, 0, gifCanvas.width, gifCanvas.height);
+
+                    // Store every 3rd frame for GIF (reduces file size)
+                    if (capturedFrames.length % 3 === 0 || capturedFrames.length === 0) {
+                        capturedFrames.push(gifCanvas);
+                    }
+
                     // Continue capturing frames at ~30 FPS
                     setTimeout(() => captureFrames(), 33);
                 }
@@ -986,12 +1020,15 @@
             recordBtn.classList.add('bg-red-500', 'hover:bg-red-600');
         }
 
-        function downloadRecording() {
+        function showDownloadModal() {
             if (recordedChunks.length === 0) {
                 alert('No recording data available. The recording may have failed.');
                 return;
             }
+            document.getElementById('video-modal').style.display = 'flex';
+        }
 
+        function downloadAsVideo() {
             const blob = new Blob(recordedChunks, { type: 'video/webm' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -1007,8 +1044,66 @@
                 URL.revokeObjectURL(url);
             }, 100);
 
-            // Show flash to indicate download
             showFlash();
+            closeModals();
+        }
+
+        function downloadAsGif() {
+            if (capturedFrames.length === 0) {
+                alert('No frames captured for GIF');
+                return;
+            }
+
+            // Disable button and show processing message
+            const gifBtn = document.getElementById('gif-download-btn');
+            gifBtn.disabled = true;
+            gifBtn.innerHTML = '<span>⏳</span><span>Creating GIF...</span>';
+
+            // Create GIF using gif.js
+            const gif = new GIF({
+                workers: 2,
+                quality: 10,
+                width: capturedFrames[0].width,
+                height: capturedFrames[0].height,
+                workerScript: 'https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js'
+            });
+
+            // Add frames to GIF
+            capturedFrames.forEach((frameCanvas, index) => {
+                gif.addFrame(frameCanvas, { delay: 100 }); // 100ms delay = ~10fps
+            });
+
+            gif.on('finished', (blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `mommy-card-celebration-${Date.now()}.gif`;
+                document.body.appendChild(a);
+                a.click();
+
+                // Cleanup
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
+
+                showFlash();
+                closeModals();
+
+                // Cleanup frames
+                recordingCanvas = null;
+                recordingContext = null;
+                capturedFrames = [];
+            });
+
+            gif.on('progress', (progress) => {
+                const percent = Math.round(progress * 100);
+                gifBtn.innerHTML = `<span>⏳</span><span>Creating GIF... ${percent}%</span>`;
+            });
+
+            // Start rendering
+            gif.render();
         }
     </script>
 </body>
