@@ -210,7 +210,7 @@
                 <div class="text-xs font-bold text-purple-600">Mommy</div>
             </div>
             <div class="char-stamp-option" onclick="selectCharacterStamp('deda')" title="Deda">
-                <svg viewBox="0 0 100 200" width="50" height="80"><circle cx="50" cy="35" r="25" fill="none" stroke="#000" stroke-width="3"/><path d="M20 35 C 10 10, 40 0, 50 5 C 60 0, 90 10, 80 35" fill="#D3D3D3" fill-opacity="0.3" stroke="#808080" stroke-width="3"/><g stroke="#000" stroke-width="2" fill="none"><circle cx="40" cy="35" r="8"/><circle cx="60" cy="35" r="8"/><line x1="48" y1="35" x2="52" y2="35"/></g><path d="M38 48 Q 50 55, 62 48" fill="none" stroke="#000" stroke-width="2"/><path d="M50 60 L 25 150 L 75 150 Z" fill="#5DADE2" stroke="#000" stroke-width="3"/><path d="M40 70 L 10 120" fill="none" stroke="#000" stroke-width="3"/><path d="M60 70 L 90 120" fill="none" stroke="#000" stroke-width="3"/><path d="M40 150 L 40 190" fill="none" stroke="#000" stroke-width="3"/><path d="M60 150 L 60 190" fill="none" stroke="#000" stroke-width="3"/></svg>
+                <svg viewBox="0 0 100 200" width="50" height="80"><circle cx="50" cy="35" r="25" fill="none" stroke="#000" stroke-width="3"/><path d="M25 25 Q 30 15, 50 12 Q 70 15, 75 25" fill="none" stroke="#808080" stroke-width="4"/><g stroke="#000" stroke-width="2" fill="none"><circle cx="40" cy="35" r="8"/><circle cx="60" cy="35" r="8"/><line x1="48" y1="35" x2="52" y2="35"/></g><path d="M40 48 L 45 52 L 55 52 L 60 48" fill="none" stroke="#666" stroke-width="2"/><path d="M38 55 Q 50 62, 62 55" fill="none" stroke="#000" stroke-width="2"/><path d="M50 60 L 25 150 L 75 150 Z" fill="#5DADE2" stroke="#000" stroke-width="3"/><path d="M40 70 L 10 120" fill="none" stroke="#000" stroke-width="3"/><path d="M60 70 L 90 120" fill="none" stroke="#000" stroke-width="3"/><path d="M40 150 L 40 190" fill="none" stroke="#000" stroke-width="3"/><path d="M60 150 L 60 190" fill="none" stroke="#000" stroke-width="3"/></svg>
                 <div class="text-xs font-bold text-blue-600">Deda</div>
             </div>
             <div class="char-stamp-option" onclick="selectCharacterStamp('girl2')" title="Abigail">
@@ -424,15 +424,18 @@
                 } else if (index === 1) {
                     // Check if this is Deda (for Get Well card)
                     if (char.isDeda) {
-                        // Deda - grandfather character with gray hair and glasses
+                        // Deda - father/grandfather character with short gray hair, mustache, and glasses
                         characterHTML = `
                             <div class="character group relative ${char.size}" onclick="characterJump(this)" data-character="deda">
                                 <div class="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity text-2xl font-bold ${char.labelColor} w-full text-center">${char.label}</div>
                                 <svg viewBox="0 0 100 200" class="w-full h-full overflow-visible">
                                     <!-- Head -->
                                     <circle cx="50" cy="35" r="25" fill="none" stroke="#000" stroke-width="3" filter="url(#rough-paper)"/>
-                                    <!-- Gray hair -->
-                                    <path d="M20 35 C 10 10, 40 0, 50 5 C 60 0, 90 10, 80 35 L 85 80 L 15 80 Z" fill="#D3D3D3" fill-opacity="0.3" stroke="#808080" stroke-width="3" filter="url(#rough-paper)"/>
+                                    <!-- Short gray hair (balding/receding) -->
+                                    <path d="M25 25 Q 30 12, 50 8 Q 70 12, 75 25" fill="none" stroke="#808080" stroke-width="5" filter="url(#rough-paper)"/>
+                                    <!-- Side hair -->
+                                    <path d="M25 25 L 22 40" fill="none" stroke="#808080" stroke-width="3"/>
+                                    <path d="M75 25 L 78 40" fill="none" stroke="#808080" stroke-width="3"/>
                                     <!-- Glasses -->
                                     <g stroke="#000" stroke-width="2" fill="none">
                                         <circle cx="40" cy="35" r="8"/>
@@ -441,13 +444,14 @@
                                         <line x1="32" y1="35" x2="25" y2="32"/>
                                         <line x1="68" y1="35" x2="75" y2="32"/>
                                     </g>
-                                    <!-- Smile -->
-                                    <path d="M38 48 Q 50 55, 62 48" fill="none" stroke="#000" stroke-width="2"/>
-                                    <!-- Body/Vest (blue) -->
+                                    <!-- Mustache -->
+                                    <path d="M40 48 L 45 52 L 55 52 L 60 48" fill="none" stroke="#666" stroke-width="2"/>
+                                    <!-- Smile (below mustache) -->
+                                    <path d="M42 56 Q 50 62, 58 56" fill="none" stroke="#000" stroke-width="2"/>
+                                    <!-- Body/Shirt (blue) -->
                                     <path d="M50 60 L 25 150 L 75 150 Z" fill="${char.dress}" stroke="#000" stroke-width="3" filter="url(#rough-paper)"/>
-                                    <!-- Vest lines -->
-                                    <line x1="45" y1="75" x2="55" y2="75" stroke="#000" stroke-width="2"/>
-                                    <line x1="40" y1="90" x2="60" y2="90" stroke="#000" stroke-width="2"/>
+                                    <!-- Shirt collar -->
+                                    <path d="M42 62 L 50 75 L 58 62" fill="none" stroke="#000" stroke-width="2"/>
                                     <!-- Arms down -->
                                     <path d="M40 70 L 10 120" fill="none" stroke="#000" stroke-width="3"/>
                                     <path d="M60 70 L 90 120" fill="none" stroke="#000" stroke-width="3"/>
@@ -797,19 +801,27 @@
             ctx.lineJoin = 'round';
 
             if (isDeda) {
-                // Deda - with gray hair and glasses
+                // Deda - father/grandfather with short gray hair, mustache, and glasses
                 // Head
                 ctx.beginPath();
                 ctx.arc(0, -height * 0.7, width * 0.4, 0, Math.PI * 2);
                 ctx.stroke();
-                // Gray hair
+                // Short gray hair (balding/receding hairline)
                 ctx.beginPath();
-                ctx.fillStyle = 'rgba(211, 211, 211, 0.3)';
                 ctx.strokeStyle = '#808080';
-                ctx.moveTo(-width * 0.4, -height * 0.7);
-                ctx.quadraticCurveTo(-width * 0.5, -height * 0.95, 0, -height * 0.9);
-                ctx.quadraticCurveTo(width * 0.5, -height * 0.95, width * 0.4, -height * 0.7);
-                ctx.fill();
+                ctx.lineWidth = 4;
+                ctx.moveTo(-width * 0.35, -height * 0.82);
+                ctx.quadraticCurveTo(0, -height * 0.95, width * 0.35, -height * 0.82);
+                ctx.stroke();
+                // Side hair
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(-width * 0.38, -height * 0.8);
+                ctx.lineTo(-width * 0.42, -height * 0.65);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(width * 0.38, -height * 0.8);
+                ctx.lineTo(width * 0.42, -height * 0.65);
                 ctx.stroke();
                 ctx.strokeStyle = '#000';
                 // Glasses
@@ -824,9 +836,18 @@
                 ctx.moveTo(-width * 0.02, -height * 0.72);
                 ctx.lineTo(width * 0.02, -height * 0.72);
                 ctx.stroke();
-                // Smile
+                // Mustache
                 ctx.beginPath();
-                ctx.arc(0, -height * 0.65, width * 0.15, 0.1 * Math.PI, 0.9 * Math.PI);
+                ctx.strokeStyle = '#666';
+                ctx.moveTo(-width * 0.15, -height * 0.6);
+                ctx.lineTo(-width * 0.05, -height * 0.56);
+                ctx.lineTo(width * 0.05, -height * 0.56);
+                ctx.lineTo(width * 0.15, -height * 0.6);
+                ctx.stroke();
+                ctx.strokeStyle = '#000';
+                // Smile (below mustache)
+                ctx.beginPath();
+                ctx.arc(0, -height * 0.52, width * 0.12, 0.1 * Math.PI, 0.9 * Math.PI);
                 ctx.stroke();
                 // Body
                 ctx.beginPath();
@@ -836,6 +857,12 @@
                 ctx.lineTo(width * 0.4, height * 0.15);
                 ctx.closePath();
                 ctx.fill();
+                ctx.stroke();
+                // Collar
+                ctx.beginPath();
+                ctx.moveTo(-width * 0.12, -height * 0.42);
+                ctx.lineTo(0, -height * 0.3);
+                ctx.lineTo(width * 0.12, -height * 0.42);
                 ctx.stroke();
                 // Arms (down)
                 ctx.beginPath();
