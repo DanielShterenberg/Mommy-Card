@@ -327,7 +327,7 @@
         <svg style="position: absolute; width: 0; height: 0;"><defs><filter id="rough-paper"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="5" result="noise" /><feDisplacementMap in="SourceGraphic" in2="noise" scale="2" /></filter></defs></svg>
         <div class="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none">
             <div class="text-center mb-8 pointer-events-auto">
-                <h1 class="text-6xl md:text-8xl font-bold tracking-wider mb-2" id="main-title"></h1>
+                <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-bold tracking-wider mb-2 whitespace-nowrap" id="main-title"></h1>
                 <p id="subtitle-text" class="text-2xl md:text-4xl text-gray-600 font-['Patrick_Hand'] animate-float mt-4 bg-white/50 px-4 py-2 rounded-lg inline-block transform -rotate-2">We are so proud of your new job!</p>
             </div>
             <div id="characters-container" class="relative w-full max-w-4xl h-96 flex items-end justify-center space-x-4 md:space-x-12 pointer-events-auto pb-12">
@@ -354,6 +354,10 @@
                 <svg viewBox="0 0 100 200" width="50" height="80"><circle cx="50" cy="35" r="25" fill="none" stroke="#000" stroke-width="3"/><path d="M20 35 C 10 10, 40 0, 50 5 C 60 0, 90 10, 80 35" fill="none" stroke="#333" stroke-width="3"/><circle cx="40" cy="33" r="3" fill="#000"/><circle cx="60" cy="33" r="3" fill="#000"/><path d="M38 48 Q 50 55, 62 48" fill="none" stroke="#000" stroke-width="2"/><path d="M50 60 L 25 150 L 75 150 Z" fill="#E6E6FA" stroke="#000" stroke-width="3"/><path d="M40 70 L 10 90" fill="none" stroke="#000" stroke-width="3"/><path d="M60 70 L 90 90" fill="none" stroke="#000" stroke-width="3"/><path d="M40 150 L 40 190" fill="none" stroke="#000" stroke-width="3"/><path d="M60 150 L 60 190" fill="none" stroke="#000" stroke-width="3"/></svg>
                 <div class="text-xs font-bold text-purple-600">Mommy</div>
             </div>
+            <div class="char-stamp-option" onclick="selectCharacterStamp('deda')" title="Deda">
+                <svg viewBox="0 0 100 200" width="50" height="80"><circle cx="50" cy="35" r="25" fill="none" stroke="#000" stroke-width="3"/><path d="M20 35 C 10 10, 40 0, 50 5 C 60 0, 90 10, 80 35" fill="#D3D3D3" fill-opacity="0.3" stroke="#808080" stroke-width="3"/><g stroke="#000" stroke-width="2" fill="none"><circle cx="40" cy="35" r="8"/><circle cx="60" cy="35" r="8"/><line x1="48" y1="35" x2="52" y2="35"/></g><path d="M38 48 Q 50 55, 62 48" fill="none" stroke="#000" stroke-width="2"/><path d="M50 60 L 25 150 L 75 150 Z" fill="#5DADE2" stroke="#000" stroke-width="3"/><path d="M40 70 L 10 120" fill="none" stroke="#000" stroke-width="3"/><path d="M60 70 L 90 120" fill="none" stroke="#000" stroke-width="3"/><path d="M40 150 L 40 190" fill="none" stroke="#000" stroke-width="3"/><path d="M60 150 L 60 190" fill="none" stroke="#000" stroke-width="3"/></svg>
+                <div class="text-xs font-bold text-blue-600">Deda</div>
+            </div>
             <div class="char-stamp-option" onclick="selectCharacterStamp('girl2')" title="Abigail">
                 <svg viewBox="0 0 100 150" width="50" height="75"><circle cx="50" cy="30" r="20" fill="none" stroke="#000" stroke-width="3"/><path d="M30 10 L 15 60 M 70 10 L 85 60 M 30 10 Q 50 -5, 70 10" fill="none" stroke="#5D4037" stroke-width="3"/><circle cx="43" cy="28" r="2" fill="#000"/><circle cx="57" cy="28" r="2" fill="#000"/><path d="M40 38 Q 50 45, 60 38" fill="none" stroke="#000" stroke-width="2"/><path d="M50 50 L 25 120 L 75 120 Z" fill="#87CEEB" stroke="#000" stroke-width="3"/><path d="M40 60 L 15 20" fill="none" stroke="#000" stroke-width="3"/><path d="M60 60 L 85 20" fill="none" stroke="#000" stroke-width="3"/><path d="M40 120 L 35 145" fill="none" stroke="#000" stroke-width="3"/><path d="M60 120 L 65 145" fill="none" stroke="#000" stroke-width="3"/></svg>
                 <div class="text-xs font-bold text-blue-500">Abigail</div>
@@ -373,6 +377,10 @@
                 <input type="checkbox" checked onchange="toggleCharacterVisibility('abigail', this.checked)">
                 <span class="text-sm font-bold text-blue-500">Abigail</span>
             </label>
+            <label class="visibility-toggle" data-char="deda">
+                <input type="checkbox" checked onchange="toggleCharacterVisibility('deda', this.checked)">
+                <span class="text-sm font-bold text-blue-600">Deda</span>
+            </label>
             <hr class="my-1 border-gray-200">
             <button onclick="toggleAllCharacters(true)" class="text-xs text-green-600 hover:underline">Show All</button>
             <button onclick="toggleAllCharacters(false)" class="text-xs text-red-600 hover:underline">Hide All</button>
@@ -384,7 +392,6 @@
             <div class="flex space-x-2 border-r pr-4 border-gray-300 pl-2">
                 <button id="eraser-btn" class="tool-btn" onclick="activateEraser()">🧽</button><button id="sticker-btn" class="tool-btn" onclick="toggleStickers()">🦋</button><button id="photo-btn" class="tool-btn" onclick="document.getElementById('photo-upload').click()" title="Add Photo">📸</button><button id="character-btn" class="tool-btn" onclick="toggleCharacters()" title="Add Characters">👧</button><button id="visibility-btn" class="tool-btn" onclick="toggleVisibilityPalette()" title="Show/Hide Characters">👁️</button>
                 <input type="file" id="photo-upload" accept="image/*" style="display:none" onchange="handlePhotoUpload(this)">
-                <input type="file" id="deda-photo-upload" accept="image/*" style="display:none" onchange="handleDedaPhotoUpload(this)">
             </div>
             <div class="flex space-x-2">
                 <button onclick="openTemplates()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-full font-['Patrick_Hand'] text-lg shadow-md transition-all whitespace-nowrap" title="Change Card">🎨</button>
@@ -655,10 +662,9 @@
         const cardContainer = document.getElementById('card-container');
         const ctx = canvas.getContext('2d');
         let allStrokes = [], currentStroke = null, mode = 'pen', isDrawing = false, lastX = 0, lastY = 0, currentPenColor = '#dc2626', currentSticker = '❤️';
-        let currentCharacter = 'girl1'; // girl1, mommy, girl2
+        let currentCharacter = 'girl1'; // girl1, mommy, girl2, deda
         let generatedImgData = null; // Store for download
         let uploadedPhoto = null; // Store uploaded photo
-        let dedaPhoto = null; // Store Deda's photo for Get Well card
 
 
         function resizeCanvas() { if (!cardContainer) return; canvas.width = cardContainer.clientWidth; canvas.height = cardContainer.clientHeight; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; redrawAll(); }
@@ -710,11 +716,16 @@
             }
             if (mode === 'character') {
                 const template = cardTemplates[currentTemplate];
-                const charData = template.characters.find(c =>
-                    (currentCharacter === 'girl1' && !c.isMain && template.characters.indexOf(c) === 0) ||
-                    (currentCharacter === 'mommy' && c.isMain) ||
-                    (currentCharacter === 'girl2' && !c.isMain && template.characters.indexOf(c) === 2)
-                ) || template.characters[currentCharacter === 'mommy' ? 1 : currentCharacter === 'girl1' ? 0 : 2];
+                let charData;
+                if (currentCharacter === 'deda') {
+                    charData = { dress: '#5DADE2' }; // Blue for Deda
+                } else {
+                    charData = template.characters.find(c =>
+                        (currentCharacter === 'girl1' && !c.isMain && template.characters.indexOf(c) === 0) ||
+                        (currentCharacter === 'mommy' && c.isMain) ||
+                        (currentCharacter === 'girl2' && !c.isMain && template.characters.indexOf(c) === 2)
+                    ) || template.characters[currentCharacter === 'mommy' ? 1 : currentCharacter === 'girl1' ? 0 : 2];
+                }
                 const dressColor = charData ? charData.dress : '#FFB6C1';
                 allStrokes.push({ type: 'character', character: currentCharacter, x: pos.relX, y: pos.relY, dressColor: dressColor });
                 ctx.globalCompositeOperation = 'source-over';
@@ -862,26 +873,6 @@
             reader.readAsDataURL(file);
         }
 
-        function handleDedaPhotoUpload(input) {
-            const file = input.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    dedaPhoto = img;
-                    // Store in localStorage so it persists
-                    localStorage.setItem('deda_photo', img.src);
-                    // Refresh the card to show Deda's photo
-                    updateCharacters(cardTemplates[currentTemplate]);
-                    showFlash();
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
         function toggleVisibilityPalette() {
             const p = document.getElementById('visibility-palette');
             const b = document.getElementById('visibility-btn');
@@ -922,8 +913,10 @@
         function drawCharacter(charType, x, y, dressColor) {
             const scale = 0.8;
             const isMommy = charType === 'mommy';
-            const height = isMommy ? 120 * scale : 90 * scale;
-            const width = isMommy ? 60 * scale : 50 * scale;
+            const isDeda = charType === 'deda';
+            const isAdult = isMommy || isDeda;
+            const height = isAdult ? 120 * scale : 90 * scale;
+            const width = isAdult ? 60 * scale : 50 * scale;
 
             ctx.save();
             ctx.translate(x, y);
@@ -932,7 +925,66 @@
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
-            if (isMommy) {
+            if (isDeda) {
+                // Deda - with gray hair and glasses
+                // Head
+                ctx.beginPath();
+                ctx.arc(0, -height * 0.7, width * 0.4, 0, Math.PI * 2);
+                ctx.stroke();
+                // Gray hair
+                ctx.beginPath();
+                ctx.fillStyle = 'rgba(211, 211, 211, 0.3)';
+                ctx.strokeStyle = '#808080';
+                ctx.moveTo(-width * 0.4, -height * 0.7);
+                ctx.quadraticCurveTo(-width * 0.5, -height * 0.95, 0, -height * 0.9);
+                ctx.quadraticCurveTo(width * 0.5, -height * 0.95, width * 0.4, -height * 0.7);
+                ctx.fill();
+                ctx.stroke();
+                ctx.strokeStyle = '#000';
+                // Glasses
+                ctx.beginPath();
+                ctx.arc(-width * 0.15, -height * 0.72, width * 0.13, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(width * 0.15, -height * 0.72, width * 0.13, 0, Math.PI * 2);
+                ctx.stroke();
+                // Bridge
+                ctx.beginPath();
+                ctx.moveTo(-width * 0.02, -height * 0.72);
+                ctx.lineTo(width * 0.02, -height * 0.72);
+                ctx.stroke();
+                // Smile
+                ctx.beginPath();
+                ctx.arc(0, -height * 0.65, width * 0.15, 0.1 * Math.PI, 0.9 * Math.PI);
+                ctx.stroke();
+                // Body
+                ctx.beginPath();
+                ctx.fillStyle = dressColor;
+                ctx.moveTo(0, -height * 0.45);
+                ctx.lineTo(-width * 0.4, height * 0.15);
+                ctx.lineTo(width * 0.4, height * 0.15);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                // Arms (down)
+                ctx.beginPath();
+                ctx.moveTo(-width * 0.2, -height * 0.35);
+                ctx.lineTo(-width * 0.6, height * 0);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(width * 0.2, -height * 0.35);
+                ctx.lineTo(width * 0.6, height * 0);
+                ctx.stroke();
+                // Legs
+                ctx.beginPath();
+                ctx.moveTo(-width * 0.15, height * 0.15);
+                ctx.lineTo(-width * 0.15, height * 0.4);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(width * 0.15, height * 0.15);
+                ctx.lineTo(width * 0.15, height * 0.4);
+                ctx.stroke();
+            } else if (isMommy) {
                 // Head
                 ctx.beginPath();
                 ctx.arc(0, -height * 0.7, width * 0.4, 0, Math.PI * 2);
