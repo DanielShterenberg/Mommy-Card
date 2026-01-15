@@ -210,7 +210,7 @@
                 <div class="text-xs font-bold text-purple-600">Mommy</div>
             </div>
             <div class="char-stamp-option" onclick="selectCharacterStamp('deda')" title="Deda">
-                <svg viewBox="0 0 100 200" width="50" height="80"><circle cx="50" cy="35" r="25" fill="none" stroke="#000" stroke-width="3"/><path d="M25 25 Q 30 15, 50 12 Q 70 15, 75 25" fill="none" stroke="#808080" stroke-width="4"/><g stroke="#000" stroke-width="2" fill="none"><circle cx="40" cy="35" r="8"/><circle cx="60" cy="35" r="8"/><line x1="48" y1="35" x2="52" y2="35"/></g><path d="M40 48 L 45 52 L 55 52 L 60 48" fill="none" stroke="#666" stroke-width="2"/><path d="M38 55 Q 50 62, 62 55" fill="none" stroke="#000" stroke-width="2"/><path d="M50 60 L 25 150 L 75 150 Z" fill="#5DADE2" stroke="#000" stroke-width="3"/><path d="M40 70 L 10 120" fill="none" stroke="#000" stroke-width="3"/><path d="M60 70 L 90 120" fill="none" stroke="#000" stroke-width="3"/><path d="M40 150 L 40 190" fill="none" stroke="#000" stroke-width="3"/><path d="M60 150 L 60 190" fill="none" stroke="#000" stroke-width="3"/></svg>
+                <svg viewBox="0 0 100 200" width="50" height="80"><ellipse cx="50" cy="35" rx="28" ry="25" fill="none" stroke="#000" stroke-width="3"/><path d="M22 30 Q 15 10, 35 5 Q 50 0, 65 5 Q 85 10, 78 30" fill="none" stroke="#808080" stroke-width="4"/><circle cx="40" cy="33" r="3" fill="#000"/><circle cx="60" cy="33" r="3" fill="#000"/><path d="M38 45 Q 44 50, 50 47 Q 56 50, 62 45" fill="none" stroke="#555" stroke-width="3"/><path d="M42 52 Q 50 57, 58 52" fill="none" stroke="#000" stroke-width="2"/><rect x="25" y="60" width="50" height="55" rx="5" fill="#5DADE2" stroke="#000" stroke-width="3"/><circle cx="50" cy="75" r="2" fill="#000"/><circle cx="50" cy="90" r="2" fill="#000"/><rect x="28" y="115" width="18" height="45" fill="#4A4A4A" stroke="#000" stroke-width="3"/><rect x="54" y="115" width="18" height="45" fill="#4A4A4A" stroke="#000" stroke-width="3"/><path d="M25 70 L 5 100" fill="none" stroke="#000" stroke-width="3"/><path d="M75 70 L 95 100" fill="none" stroke="#000" stroke-width="3"/></svg>
                 <div class="text-xs font-bold text-blue-600">Deda</div>
             </div>
             <div class="char-stamp-option" onclick="selectCharacterStamp('girl2')" title="Abigail">
@@ -424,40 +424,33 @@
                 } else if (index === 1) {
                     // Check if this is Deda (for Get Well card)
                     if (char.isDeda) {
-                        // Deda - father/grandfather character with short gray hair, mustache, and glasses
+                        // Deda - grandfather character with mustache, no glasses, chubby
                         characterHTML = `
                             <div class="character group relative ${char.size}" onclick="characterJump(this)" data-character="deda">
                                 <div class="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity text-2xl font-bold ${char.labelColor} w-full text-center">${char.label}</div>
                                 <svg viewBox="0 0 100 200" class="w-full h-full overflow-visible">
-                                    <!-- Head -->
-                                    <circle cx="50" cy="35" r="25" fill="none" stroke="#000" stroke-width="3" filter="url(#rough-paper)"/>
-                                    <!-- Short gray hair (balding/receding) -->
-                                    <path d="M25 25 Q 30 12, 50 8 Q 70 12, 75 25" fill="none" stroke="#808080" stroke-width="5" filter="url(#rough-paper)"/>
-                                    <!-- Side hair -->
-                                    <path d="M25 25 L 22 40" fill="none" stroke="#808080" stroke-width="3"/>
-                                    <path d="M75 25 L 78 40" fill="none" stroke="#808080" stroke-width="3"/>
-                                    <!-- Glasses -->
-                                    <g stroke="#000" stroke-width="2" fill="none">
-                                        <circle cx="40" cy="35" r="8"/>
-                                        <circle cx="60" cy="35" r="8"/>
-                                        <line x1="48" y1="35" x2="52" y2="35"/>
-                                        <line x1="32" y1="35" x2="25" y2="32"/>
-                                        <line x1="68" y1="35" x2="75" y2="32"/>
-                                    </g>
+                                    <!-- Chubby head -->
+                                    <ellipse cx="50" cy="35" rx="28" ry="25" fill="none" stroke="#000" stroke-width="3" filter="url(#rough-paper)"/>
+                                    <!-- Medium gray hair -->
+                                    <path d="M22 30 Q 15 10, 35 5 Q 50 0, 65 5 Q 85 10, 78 30" fill="none" stroke="#808080" stroke-width="4" filter="url(#rough-paper)"/>
+                                    <!-- Eyes (no glasses) -->
+                                    <circle cx="40" cy="33" r="3" fill="#000"/>
+                                    <circle cx="60" cy="33" r="3" fill="#000"/>
                                     <!-- Mustache -->
-                                    <path d="M40 48 L 45 52 L 55 52 L 60 48" fill="none" stroke="#666" stroke-width="2"/>
-                                    <!-- Smile (below mustache) -->
-                                    <path d="M42 56 Q 50 62, 58 56" fill="none" stroke="#000" stroke-width="2"/>
-                                    <!-- Body/Shirt (blue) -->
-                                    <path d="M50 60 L 25 150 L 75 150 Z" fill="${char.dress}" stroke="#000" stroke-width="3" filter="url(#rough-paper)"/>
-                                    <!-- Shirt collar -->
-                                    <path d="M42 62 L 50 75 L 58 62" fill="none" stroke="#000" stroke-width="2"/>
+                                    <path d="M38 45 Q 44 50, 50 47 Q 56 50, 62 45" fill="none" stroke="#555" stroke-width="3"/>
+                                    <!-- Smile below mustache -->
+                                    <path d="M42 52 Q 50 57, 58 52" fill="none" stroke="#000" stroke-width="2"/>
+                                    <!-- Shirt (rectangle, not triangle) -->
+                                    <rect x="25" y="60" width="50" height="55" rx="5" fill="${char.dress}" stroke="#000" stroke-width="3" filter="url(#rough-paper)"/>
+                                    <!-- Shirt buttons -->
+                                    <circle cx="50" cy="75" r="3" fill="#000"/>
+                                    <circle cx="50" cy="90" r="3" fill="#000"/>
+                                    <!-- Pants -->
+                                    <rect x="28" y="115" width="18" height="50" fill="#4A4A4A" stroke="#000" stroke-width="3"/>
+                                    <rect x="54" y="115" width="18" height="50" fill="#4A4A4A" stroke="#000" stroke-width="3"/>
                                     <!-- Arms down -->
-                                    <path d="M40 70 L 10 120" fill="none" stroke="#000" stroke-width="3"/>
-                                    <path d="M60 70 L 90 120" fill="none" stroke="#000" stroke-width="3"/>
-                                    <!-- Legs -->
-                                    <path d="M40 150 L 40 190" fill="none" stroke="#000" stroke-width="3"/>
-                                    <path d="M60 150 L 60 190" fill="none" stroke="#000" stroke-width="3"/>
+                                    <path d="M25 70 L 5 110" fill="none" stroke="#000" stroke-width="3"/>
+                                    <path d="M75 70 L 95 110" fill="none" stroke="#000" stroke-width="3"/>
                                 </svg>
                             </div>
                         `;
@@ -801,86 +794,71 @@
             ctx.lineJoin = 'round';
 
             if (isDeda) {
-                // Deda - father/grandfather with short gray hair, mustache, and glasses
-                // Head
+                // Deda - chubby with mustache, no glasses
+                // Chubby head (ellipse)
                 ctx.beginPath();
-                ctx.arc(0, -height * 0.7, width * 0.4, 0, Math.PI * 2);
+                ctx.ellipse(0, -height * 0.7, width * 0.45, width * 0.4, 0, 0, Math.PI * 2);
                 ctx.stroke();
-                // Short gray hair (balding/receding hairline)
+                // Medium gray hair
                 ctx.beginPath();
                 ctx.strokeStyle = '#808080';
-                ctx.lineWidth = 4;
-                ctx.moveTo(-width * 0.35, -height * 0.82);
-                ctx.quadraticCurveTo(0, -height * 0.95, width * 0.35, -height * 0.82);
-                ctx.stroke();
-                // Side hair
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(-width * 0.38, -height * 0.8);
-                ctx.lineTo(-width * 0.42, -height * 0.65);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(width * 0.38, -height * 0.8);
-                ctx.lineTo(width * 0.42, -height * 0.65);
+                ctx.lineWidth = 3;
+                ctx.moveTo(-width * 0.35, -height * 0.75);
+                ctx.quadraticCurveTo(-width * 0.3, -height * 0.95, 0, -height * 0.92);
+                ctx.quadraticCurveTo(width * 0.3, -height * 0.95, width * 0.35, -height * 0.75);
                 ctx.stroke();
                 ctx.strokeStyle = '#000';
-                // Glasses
+                ctx.lineWidth = 2;
+                // Eyes (no glasses)
                 ctx.beginPath();
-                ctx.arc(-width * 0.15, -height * 0.72, width * 0.13, 0, Math.PI * 2);
-                ctx.stroke();
+                ctx.arc(-width * 0.15, -height * 0.72, 3, 0, Math.PI * 2);
+                ctx.fill();
                 ctx.beginPath();
-                ctx.arc(width * 0.15, -height * 0.72, width * 0.13, 0, Math.PI * 2);
-                ctx.stroke();
-                // Bridge
-                ctx.beginPath();
-                ctx.moveTo(-width * 0.02, -height * 0.72);
-                ctx.lineTo(width * 0.02, -height * 0.72);
-                ctx.stroke();
+                ctx.arc(width * 0.15, -height * 0.72, 3, 0, Math.PI * 2);
+                ctx.fill();
                 // Mustache
                 ctx.beginPath();
-                ctx.strokeStyle = '#666';
-                ctx.moveTo(-width * 0.15, -height * 0.6);
-                ctx.lineTo(-width * 0.05, -height * 0.56);
-                ctx.lineTo(width * 0.05, -height * 0.56);
-                ctx.lineTo(width * 0.15, -height * 0.6);
+                ctx.strokeStyle = '#555';
+                ctx.lineWidth = 3;
+                ctx.moveTo(-width * 0.2, -height * 0.62);
+                ctx.quadraticCurveTo(-width * 0.1, -height * 0.58, 0, -height * 0.6);
+                ctx.quadraticCurveTo(width * 0.1, -height * 0.58, width * 0.2, -height * 0.62);
                 ctx.stroke();
                 ctx.strokeStyle = '#000';
-                // Smile (below mustache)
+                ctx.lineWidth = 2;
+                // Smile below mustache
                 ctx.beginPath();
-                ctx.arc(0, -height * 0.52, width * 0.12, 0.1 * Math.PI, 0.9 * Math.PI);
+                ctx.arc(0, -height * 0.58, width * 0.12, 0.1 * Math.PI, 0.9 * Math.PI);
                 ctx.stroke();
-                // Body
+                // Shirt (rectangle)
                 ctx.beginPath();
                 ctx.fillStyle = dressColor;
-                ctx.moveTo(0, -height * 0.45);
-                ctx.lineTo(-width * 0.4, height * 0.15);
-                ctx.lineTo(width * 0.4, height * 0.15);
-                ctx.closePath();
+                ctx.roundRect(-width * 0.35, -height * 0.45, width * 0.7, height * 0.5, 5);
                 ctx.fill();
                 ctx.stroke();
-                // Collar
+                // Shirt buttons
                 ctx.beginPath();
-                ctx.moveTo(-width * 0.12, -height * 0.42);
-                ctx.lineTo(0, -height * 0.3);
-                ctx.lineTo(width * 0.12, -height * 0.42);
-                ctx.stroke();
+                ctx.fillStyle = '#000';
+                ctx.arc(0, -height * 0.3, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(0, -height * 0.15, 3, 0, Math.PI * 2);
+                ctx.fill();
+                // Pants
+                ctx.beginPath();
+                ctx.fillStyle = '#4A4A4A';
+                ctx.fillRect(-width * 0.3, height * 0.05, width * 0.25, height * 0.35);
+                ctx.strokeRect(-width * 0.3, height * 0.05, width * 0.25, height * 0.35);
+                ctx.fillRect(width * 0.05, height * 0.05, width * 0.25, height * 0.35);
+                ctx.strokeRect(width * 0.05, height * 0.05, width * 0.25, height * 0.35);
                 // Arms (down)
                 ctx.beginPath();
-                ctx.moveTo(-width * 0.2, -height * 0.35);
+                ctx.moveTo(-width * 0.35, -height * 0.35);
                 ctx.lineTo(-width * 0.6, height * 0);
                 ctx.stroke();
                 ctx.beginPath();
-                ctx.moveTo(width * 0.2, -height * 0.35);
+                ctx.moveTo(width * 0.35, -height * 0.35);
                 ctx.lineTo(width * 0.6, height * 0);
-                ctx.stroke();
-                // Legs
-                ctx.beginPath();
-                ctx.moveTo(-width * 0.15, height * 0.15);
-                ctx.lineTo(-width * 0.15, height * 0.4);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(width * 0.15, height * 0.15);
-                ctx.lineTo(width * 0.15, height * 0.4);
                 ctx.stroke();
             } else if (isMommy) {
                 // Head
