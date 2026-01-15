@@ -1,0 +1,19 @@
+TO COMPLETE THE SETUP:
+
+Please save your father's photo (the image you shared in the chat showing him with Ella) as:
+  images/deda.jpg
+
+Steps:
+1. Right-click the image you shared in the chat (father with Ella in the kitchen)
+2. Save it to your computer
+3. Save or move the file to: Mommy-Card/images/deda.jpg
+4. The Get Well card will automatically display this image
+
+The photo will appear in the middle of the "Get Well Soon" card, replacing the upload button.
+
+Alternative formats supported:
+- images/deda.jpg (preferred)
+- images/deda.png
+
+Note: If the image file is not found, the card will show an upload button instead.
+You can also click on the displayed image to change it temporarily.

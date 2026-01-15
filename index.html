@@ -439,14 +439,15 @@
                     if (char.isDeda) {
                         // Deda - show photo or placeholder
                         const photoSrc = dedaPhoto ? dedaPhoto.src : '';
-                        const uploadBtnStyle = dedaPhoto ? 'display:none' : 'display:flex';
                         characterHTML = `
-                            <div class="character group relative ${char.size}" onclick="characterJump(this)" data-character="deda" style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                            <div class="character group relative ${char.size}" data-character="deda" style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
                                 <div class="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity text-2xl font-bold ${char.labelColor} w-full text-center">${char.label}</div>
                                 ${photoSrc ? `
-                                    <img src="${photoSrc}" alt="Deda" style="width: 180px; height: 240px; object-fit: cover; border-radius: 20px; border: 5px solid white; box-shadow: 0 8px 16px rgba(0,0,0,0.2);" />
+                                    <div onclick="characterJump(this); setTimeout(() => document.getElementById('deda-photo-upload').click(), 300);" style="cursor:pointer; position:relative;" title="Click to change photo">
+                                        <img src="${photoSrc}" alt="Deda" style="width: 180px; height: 240px; object-fit: cover; border-radius: 20px; border: 5px solid white; box-shadow: 0 8px 16px rgba(0,0,0,0.2);" />
+                                    </div>
                                 ` : `
-                                    <div style="${uploadBtnStyle}; flex-direction:column; align-items:center; justify-content:center; width: 180px; height: 240px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 20px; border: 5px dashed white; cursor:pointer;" onclick="event.stopPropagation(); document.getElementById('deda-photo-upload').click();">
+                                    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; width: 180px; height: 240px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 20px; border: 5px dashed white; cursor:pointer;" onclick="event.stopPropagation(); document.getElementById('deda-photo-upload').click();">
                                         <div style="font-size: 3rem; margin-bottom: 10px;">📸</div>
                                         <div style="color: white; font-weight: bold; text-align: center; padding: 0 10px;">Click to add<br>Deda's photo!</div>
                                     </div>
@@ -972,7 +973,7 @@
 
 
         window.onload = function() {
-            // Load Deda's photo from localStorage if it exists
+            // Load Deda's photo from localStorage if it exists, otherwise load default
             const savedDedaPhoto = localStorage.getItem('deda_photo');
             if (savedDedaPhoto) {
                 const img = new Image();
@@ -980,6 +981,31 @@
                     dedaPhoto = img;
                 };
                 img.src = savedDedaPhoto;
+            } else {
+                // Load default Deda photo - try multiple formats
+                const img = new Image();
+                img.onload = function() {
+                    dedaPhoto = img;
+                    // Update the display if we're on the Get Well card
+                    if (currentTemplate === 'getwell') {
+                        updateCharacters(cardTemplates[currentTemplate]);
+                    }
+                };
+                img.onerror = function() {
+                    // Try PNG if JPG fails
+                    const imgPng = new Image();
+                    imgPng.onload = function() {
+                        dedaPhoto = imgPng;
+                        if (currentTemplate === 'getwell') {
+                            updateCharacters(cardTemplates[currentTemplate]);
+                        }
+                    };
+                    imgPng.onerror = function() {
+                        console.log('Default Deda photo not found. Upload button will be shown.');
+                    };
+                    imgPng.src = 'images/deda.png';
+                };
+                img.src = 'images/deda.jpg'; // Default image path
             }
 
             resizeCanvas();
